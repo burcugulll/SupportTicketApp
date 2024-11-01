@@ -1,4 +1,4 @@
-namespace SupportTicketApp.Models
+namespace SupportTicketApp.ViewModels
 {
     public class ErrorViewModel
     {

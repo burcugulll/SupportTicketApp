@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SupportTicketApp.Models;
 using System.Diagnostics;
+using SupportTicketApp.ViewModels;
+
 
 namespace SupportTicketApp.Controllers
 {
