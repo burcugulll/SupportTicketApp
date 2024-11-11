@@ -3,10 +3,11 @@ namespace SupportTicketApp.ViewModels
 {
     public class LoginViewModel
     {
-        [MinLength(3)]
-        public string UserName { get; set; }
+        [Required(ErrorMessage = "Lütfen kullanıcı adı veya e-posta giriniz.")]
+        public string UsernameOrEmail { get; set; }
 
-        [MinLength(5)]
+        [Required(ErrorMessage = "Lütfen şifre giriniz.")]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
     }
 }

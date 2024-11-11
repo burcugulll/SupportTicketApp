@@ -17,6 +17,8 @@ namespace SupportTicketApp.Models
         [Required, MaxLength(50)]
         public string Password { get; set; }
         public string Salt { get; set; }
+        [Required, MaxLength(100)]
+        public string Email { get; set; }
 
 
         [MaxLength(100)]

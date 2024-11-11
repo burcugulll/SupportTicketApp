@@ -22,19 +22,28 @@ namespace SupportTicketApp.Controllers
             _context = context;
         }
 
+        [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            //if (ModelState.IsValid)
-            //{
-                var user = _context.UserTabs.SingleOrDefault(u => u.UserName == username);
+            if (ModelState.IsValid)
+            {
+                UserTab user;
+                if (model.UsernameOrEmail.Contains("@"))
+                {
+                    user = _context.UserTabs.SingleOrDefault(u => u.Email == model.UsernameOrEmail);
+                }
+                else
+                {
+                    user = _context.UserTabs.SingleOrDefault(u => u.UserName == model.UsernameOrEmail);
+                }
 
-                if (user != null)
+            if (user != null)
                 {
                     if (user.LockoutEndTime.HasValue && user.LockoutEndTime > DateTime.Now)
                     {
@@ -42,15 +51,15 @@ namespace SupportTicketApp.Controllers
                         return View();
                     }
 
-                    var hashedPassword = user.HashPassword(password);
-                    if (user.Password == hashedPassword)
+                var hashedPassword = user.HashPassword(model.Password);
+                if (user.Password == hashedPassword)
                     {
                         user.LoginAttempts = 0;
                         user.LockoutEndTime = null;
 
                         var userLog = new UserLogTab
                         {
-                            UserName = username,
+                            UserName = user.UserName,
                             LogTime = DateTime.Now,
                             IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
                             Log = "Başarılı giriş"
@@ -89,7 +98,7 @@ namespace SupportTicketApp.Controllers
                         user.LoginAttempts++;
                         var userLog = new UserLogTab
                         {
-                            UserName = username,
+                            UserName = user.UserName,
                             LogTime = DateTime.Now,
                             IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
                             Log = "Başarısız giriş"
@@ -113,11 +122,11 @@ namespace SupportTicketApp.Controllers
                     ViewBag.Message = "Böyle bir kullanıcı veritabanında kayıtlı değil.";
                 }
 
-                return View();
+                
             }
-        //    return View();
+            return View(model);
 
-        //}
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -128,10 +137,19 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+
+        [HttpGet]
+        public IActionResult Test()
+        {
+            var result = new { message = "Test" };  // JSON dönecek veriyi oluşturuyoruz
+            return new JsonResult(result);  // JsonResult ile veriyi JSON formatında döndürüyoruz
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> CreateAdminUser()
@@ -139,7 +157,7 @@ namespace SupportTicketApp.Controllers
             try
             {
                 Console.WriteLine("1 - Salt oluşturuluyor");
-
+      
                 string salt = SupportTicketApp.Models.UserTab.GenerateSalt();
                 Console.WriteLine("2 - Şifre hashleniyor");
 
@@ -149,14 +167,18 @@ namespace SupportTicketApp.Controllers
                     ViewBag.Message = "UserTabs tablosuna erişilemiyor.";
                     return View();
                 }
+                string adminEmail = "admin@example.com";
                 var existingAdmin = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == "admin");
                 if (existingAdmin != null)
                 {
+                    return new JsonResult(new { code = 404, message = "Admin kullanıcı zaten mevcut."});  // JsonResult ile veriyi JSON formatında döndürüyoruz
                     ViewBag.Message = "Admin kullanıcı zaten mevcut.";
+
                     return View();
                 }
                 var adminUser = new UserTab
                 {
+                    Email = adminEmail,
                     UserName = "admin",
                     Password = hashedPassword,
                     Salt = salt,
@@ -181,30 +203,33 @@ namespace SupportTicketApp.Controllers
                 {
                     ViewBag.Message = "Yönetici kullanıcı kaydedilemedi. Veritabanında bir sorun olabilir.";
                 }
-                return View(); 
+
+                var jsonresult = new { code=200, message = "Admin Kullanıcısı Başarıyla Oluşturuldu." };  // JSON dönecek veriyi oluşturuyoruz
+                return new JsonResult(jsonresult);  // JsonResult ile veriyi JSON formatında döndürüyoruz
+
 
             }
             catch (Exception ex)
             {
-                ViewBag.Message = "Yönetici kullanıcı oluşturulurken bir hata oluştu: " + ex.Message;
-                return View();
-
+                return new JsonResult(new { code = 500, message = "Admin Kullanıcısı Oluşturulamadı",error = ex.ToString() });  // JsonResult ile veriyi JSON formatında döndürüyoruz
             }
 
         }
+        
         [HttpPost]
         public IActionResult Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                if (_context.UserTabs.Any(u => u.UserName == model.UserName))
+                if (_context.UserTabs.Any(u => u.UserName == model.UserName || u.Email == model.Email))
                 {
-                    ModelState.AddModelError("UserName", "Bu kullanıcı adı zaten alınmış.");
+                    ModelState.AddModelError("UserName", "Bu kullanıcı adı veya e-posta zaten alınmış.");
                     return View(model);
                 }
 
                 var user = new UserTab
                 {
+                    Email = model.Email,  
                     UserName = model.UserName,
                     Name = model.Name,
                     UserType = UserType.SonKullanici,

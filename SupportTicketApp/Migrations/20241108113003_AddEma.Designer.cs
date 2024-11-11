@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupportTicketApp.Models;
 
@@ -11,9 +12,11 @@ using SupportTicketApp.Models;
 namespace SupportTicketApp.Migrations
 {
     [DbContext(typeof(SupportTicketDbContext))]
-    partial class SupportTicketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241108113003_AddEma")]
+    partial class AddEma
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

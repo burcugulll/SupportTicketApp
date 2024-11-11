@@ -1,5 +1,45 @@
 ﻿@{
-    ViewData["Title"] = "Yonetici Paneli";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Hoşgeldiniz Yönetici</h2>
+<div class="container mt-4">
+    <h1 class="text-center">Admin Dashboard</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Ticket Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>Manage and view all tickets</p>
+                    <a href="@Url.Action("TicketManagement", "Admin")" class="btn btn-primary">Manage Tickets</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Create Admin User</h5>
+                </div>
+                <div class="card-body">
+                    <p>Create a new admin user for the system</p>
+                    <a href="@Url.Action("CreateAdminUser", "Account")" class="btn btn-primary">Create Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">User Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>View and manage all system users</p>
+                    <a href="@Url.Action("Index", "User")" class="btn btn-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

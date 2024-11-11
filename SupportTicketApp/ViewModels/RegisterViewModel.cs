@@ -3,6 +3,9 @@ namespace SupportTicketApp.ViewModels
 {
     public class RegisterViewModel
     {
+        [Required(ErrorMessage = "Email gereklidir.")]
+        [StringLength(50, MinimumLength = 10, ErrorMessage = "Email en az 10 ve en fazla 50 karakter olmalıdır.")]
+        public string Email { get; set; }
         [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Kullanıcı adı en az 3 ve en fazla 50 karakter olmalıdır.")]
         public string UserName { get; set; }

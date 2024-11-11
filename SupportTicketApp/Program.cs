@@ -37,4 +37,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
+//app.Run("http://0.0.0.0:8000");  // Yerel IP üzerinden baþlat
 app.Run();
