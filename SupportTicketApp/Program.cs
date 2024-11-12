@@ -3,6 +3,9 @@ using SupportTicketApp.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using SupportTicketApp.Controllers;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,6 +21,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             });
 var app = builder.Build();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SupportTicketDbContext>();
+        var accountController = new AccountController(context);
+        var result = await accountController.CreateAdminUser() as JsonResult;  
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Admin kullanýcý oluþturulamadý: " + ex.Message);
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -30,7 +50,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
