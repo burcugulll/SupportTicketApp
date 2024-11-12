@@ -1,0 +1,77 @@
+﻿@model SupportTicketApp.Models.TicketInfoTab
+
+@{
+    ViewData["Title"] = "Bilet Detayları";
+}
+
+<div class="container">
+    <h2>Bilet Detayları</h2>
+
+    <!-- Bilet Bilgileri -->
+    <div class="ticket-details">
+        <table class="table table-bordered">
+            <tr>
+                <th>Başlık</th>
+                <td>@Model.Title</td>
+            </tr>
+            <tr>
+                <th>Durum</th>
+                <td>@(Model.Status ? "Aktif" : "Pasif")</td>
+            </tr>
+            <tr>
+                <th>Öncelik</th>
+                <td>@Model.Urgency</td>
+            </tr>
+            <tr>
+                <th>Oluşturan Kullanıcı</th>
+                <td>@Model.UserTab?.UserName ?? "Atanmamış"</td>
+            </tr>
+            <tr>
+                <th>Oluşturulma Tarihi</th>
+                <td>@Model.CreatedDate.ToShortDateString()</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Yorumlar Bölümü -->
+    <div class="comments-section">
+        <h3>Yorumlar</h3>
+        @foreach (var comment in Model.Comments)
+        {
+            <div class="comment">
+                <strong>@comment.Title</strong>
+                <p>@comment.Description</p>
+                <small>@comment.CreatedDate.ToShortDateString()</small>
+            </div>
+        }
+
+        <!-- Yeni Yorum Ekleme -->
+        <form asp-action="AddComment" method="post">
+            <input type="hidden" name="ticketId" value="@Model.TicketId" />
+            <div class="form-group">
+                <label for="commentTitle">Başlık</label>
+                <input type="text" class="form-control" id="commentTitle" name="commentTitle" required />
+            </div>
+            <div class="form-group">
+                <label for="commentDescription">Açıklama</label>
+                <textarea class="form-control" id="commentDescription" name="commentDescription" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Yorum Ekle</button>
+        </form>
+    </div>
+
+    <!-- İşlemler ve Butonlar -->
+    <div class="btn-group mt-4 d-flex justify-content-center" role="group">
+        <a asp-controller="Admin" asp-action="AllTickets" class="btn btn-primary btn-lg mx-2">Tüm Biletler</a>
+
+        <form asp-action="DeleteTicket" method="post" style="display:inline;">
+            <input type="hidden" name="id" value="@Model.TicketId" />
+            <button type="submit" class="btn btn-danger btn-lg mx-2">Bileti Sil</button>
+        </form>
+
+        <form asp-action="UpdateTicketStatus" method="post" style="display:inline;">
+            <input type="hidden" name="id" value="@Model.TicketId" />
+            <button type="submit" class="btn btn-warning btn-lg mx-2">Durumu Güncelle</button>
+        </form>
+    </div>
+</div>
