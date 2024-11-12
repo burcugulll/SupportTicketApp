@@ -1,0 +1,30 @@
+﻿@model IEnumerable<SupportTicketApp.Models.UserLogTab>
+
+<h1 class="mb-4">Giriş Kayıtları</h1>
+
+<table class="table table-hover table-striped table-bordered">
+    <thead class="table-primary">
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Kullanıcı Adı</th>
+            <th scope="col">Giriş Zamanı</th>
+            <th scope="col">IP Adresi</th>
+            <th scope="col">Giriş Durumu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model.OrderByDescending(l => l.LogTime))
+        {
+            <tr>
+                <td>@log.LogId</td>
+                <td>@log.UserName</td>
+                <td>@log.LogTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@log.IPAdress</td>
+                <td>
+                    @log.Log
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -21,7 +21,13 @@ namespace SupportTicketApp.Controllers
             return View();
         }
 
+        public IActionResult UserLog()
+        {
+            var userLogs = _context.UserLogTabs.ToList();
+            return View(userLogs);
+        }
 
+        
         // Tüm Biletler
         public async Task<IActionResult> AllTickets()
         {

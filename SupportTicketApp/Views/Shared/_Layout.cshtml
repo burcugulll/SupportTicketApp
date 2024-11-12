@@ -1,151 +1,103 @@
-﻿@using SupportTicketApp.Models
-@using SupportTicketApp.Enums
-@inject SupportTicketDbContext _context
-
-@{
-    var userId = Context.User?.Identity?.Name; // Kullanıcı adı (userName) üzerinden sorgulama yapıyoruz
-    var user = _context.UserTabs
-                   .FirstOrDefault(u => u.UserName == userId || u.Email == userId);
-    var userType = user != null ? user.UserType : (UserType?)null; // Kullanıcıyı bulduysak türünü alıyoruz, bulamazsak null
-
-}
+﻿@using SupportTicketApp.Enums
+@using SupportTicketApp.Models
+@using Microsoft.AspNetCore.Authentication.Cookies
 
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/css/styles.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SupportTicketApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SupportTicketApp.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <!-- Yönetici Navbar'ı -->
-    @if (userType == UserType.Yonetici)
-    {
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Yönetici Paneli</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-brand">SupportTicketApp</span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="@Url.Action("Index", "Admin")">Ana Sayfa</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("UserManagement", "Admin")">Kullanıcı Yönetimi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("AllTickets", "Admin")">Tüm Biletler</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("OngoingTickets", "Admin")">Devam Eden Biletler</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("UnassignedTickets", "Admin")">Atanmamış Biletler</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Logout", "Account")">Çıkış</a>
-                        </li>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            var userName = User.Identity.Name;
+                            var userTypeClaim = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+                            UserType? userType = userTypeClaim != null ? Enum.Parse<UserType>(userTypeClaim.Value) : null;
+
+                            if (userType == UserType.Yonetici)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UserLog">Giriş Kayıtları</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UserManagement">Kullanıcılar</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="AllTickets">Tüm Biletler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="OngoingTickets">Devam Eden Biletler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UnassignedTickets">Atanmamış Biletler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
+                                </li>
+                            }
+                            else if (userType == UserType.Calisan)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="TicketsList">Destek Biletleri</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="AssignedTickets">Çalışana Atanmış Biletler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Privacy">Ayarlar</a>
+                                </li>
+                            }
+                            else if (userType == UserType.SonKullanici)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="ViewTickets">Destek Biletleri Listesi</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+                                    <button type="submit" class="nav-link text-dark" style="border: none; background: none;">
+                                        Çıkış Yap
+                                    </button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
-    }
-    <!-- Çalışan Navbar'ı -->
-    else if (userType == UserType.Calisan)
-    {
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Çalışan Paneli</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("AssignedTickets", "Employee")">Çalışana Atanmış Biletler</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("TicketDetails", "Employee")">Bilet Detayı</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Logout", "Account")">Çıkış</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    }
-    <!-- Son Kullanıcı Navbar'ı -->
-    else if (userType == UserType.SonKullanici)
-    {
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Son Kullanıcı Paneli</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("ViewTickets", "User")">Destek Biletleri Listesi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("CreateTicket", "User")">Bilet Ekle</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("TicketDetails", "User")">Bilet Detayı</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Logout", "Account")">Çıkış</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    }
-    <!-- Giriş Yapmamış Kullanıcı Navbar'ı -->
-    else
-    {
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Destek Sistemi</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Login", "Account")">Giriş Yap</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Register", "Account")">Kayıt Ol</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    }
-
-    <!-- Sayfanın ana içeriği -->
+    </header>
     <div class="container">
-        @RenderBody()
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
     </div>
 
-    <!-- Footer -->
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - SupportTicketApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2024 - SupportTicketApp
         </div>
     </footer>
-
-    <!-- JavaScript ve jQuery Bağlantıları -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
