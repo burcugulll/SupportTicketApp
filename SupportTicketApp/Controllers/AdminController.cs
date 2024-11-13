@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupportTicketApp.Enums;
 using SupportTicketApp.Models;
+using SupportTicketApp.ViewModels;
 using System.Linq;
 using System.Threading.Tasks;
 namespace SupportTicketApp.Controllers
@@ -27,7 +28,41 @@ namespace SupportTicketApp.Controllers
             return View(userLogs);
         }
 
-        
+        // GET: Yeni Kullanıcı Ekleme Sayfası
+        public IActionResult CreateUser()
+        {
+            return View(new CreateUserViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(CreateUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            string salt = UserTab.GenerateSalt();
+            var user = new UserTab 
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = new UserTab().HashPassword(model.Password + salt),
+                Salt = salt,
+                UserType = model.UserType,
+                Name = model.Name, 
+                CreatedDate = DateTime.Now,
+                Status = true,
+                ProfilePhoto = new byte[0]
+            };
+
+            _context.UserTabs.Add(user);
+            await _context.SaveChangesAsync();
+
+            ViewBag.Message = "Kullanıcı başarıyla oluşturuldu.";
+            return View();
+        }
+
         // Tüm Biletler
         public async Task<IActionResult> AllTickets()
         {
