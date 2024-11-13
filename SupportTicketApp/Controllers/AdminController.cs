@@ -41,26 +41,46 @@ namespace SupportTicketApp.Controllers
             {
                 return View(model);
             }
+            byte[] profilePhotoData = null;
+            if (model.ProfilePhoto != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await model.ProfilePhoto.CopyToAsync(memoryStream);
+                    profilePhotoData = memoryStream.ToArray();
+                }
+            }
 
-            string salt = UserTab.GenerateSalt();
             var user = new UserTab 
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                Password = new UserTab().HashPassword(model.Password + salt),
-                Salt = salt,
+                
                 UserType = model.UserType,
                 Name = model.Name, 
                 CreatedDate = DateTime.Now,
                 Status = true,
-                ProfilePhoto = new byte[0]
-            };
+                ProfilePhoto = profilePhotoData 
 
+            };
+            string salt = SupportTicketApp.Models.UserTab.GenerateSalt();
+            user.Salt = salt;
+            user.Password = user.HashPassword(model.Password);
+            
             _context.UserTabs.Add(user);
             await _context.SaveChangesAsync();
 
             ViewBag.Message = "Kullanıcı başarıyla oluşturuldu.";
-            return View();
+            return RedirectToAction("Index");
+
+        }
+        private async Task<byte[]> ConvertToBytes(IFormFile file)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                return memoryStream.ToArray();
+            }
         }
 
         // Tüm Biletler
