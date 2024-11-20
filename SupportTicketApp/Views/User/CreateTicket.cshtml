@@ -1,0 +1,39 @@
+﻿@model SupportTicketApp.Models.TicketInfoTab
+
+@{
+    ViewData["Title"] = "Yeni Destek Bileti";
+}
+
+<h1>Yeni Destek Bileti Oluştur</h1>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+<form asp-action="CreateTicket" method="post">
+    <div class="form-group">
+        <label for="Title">Başlık</label>
+        <input type="text" class="form-control" id="Title" name="Title" required />
+    </div>
+    <div class="form-group">
+        <label for="Description">Açıklama</label>
+        <textarea class="form-control" id="Description" name="Description" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="Urgency">Aciliyet</label>
+        <select class="form-control" id="Urgency" name="Urgency">
+            <option value="0">Düşük</option>
+            <option value="1">Orta</option>
+            <option value="2">Yüksek</option>
+        </select>
+        <span asp-validation-for="Urgency" class="text-danger"></span>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Bilet Oluştur</button>
+</form>

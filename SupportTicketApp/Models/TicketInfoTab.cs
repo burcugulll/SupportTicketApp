@@ -16,7 +16,7 @@ namespace SupportTicketApp.Models
 
         public int? TicketImageId { get; set; }
 
-        [MaxLength(20)]
+        [EnumDataType(typeof(UrgencyLevel))]
         public UrgencyLevel Urgency { get; set; } 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
@@ -27,8 +27,11 @@ namespace SupportTicketApp.Models
         public bool Status { get; set; } = true;
         // UserId Ekleyelim
         public int UserId { get; set; }
-        public virtual TicketImage TicketImage { get; set; } // İlişkilendirilen resim
-        public virtual ICollection<TicketInfoCommentTab> Comments { get; set; } // Bilete ait yorumlar
-        public virtual UserTab UserTab { get; set; }
+        public virtual TicketImage? TicketImage { get; set; } // İlişkilendirilen resim
+        public virtual ICollection<TicketInfoCommentTab>? Comments { get; set; } // Bilete ait yorumlar
+        public virtual UserTab? UserTab { get; set; }
+        // Personel (assigned person) ile ilişkilendirme
+        public int? AssignedPersonId { get; set; } // Bu, atanmış personelin UserId'si
+        public virtual UserTab? AssignedPerson { get; set; } // Personel (user) ile ilişki
     }
 }

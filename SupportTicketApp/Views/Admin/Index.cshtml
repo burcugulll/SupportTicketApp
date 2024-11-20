@@ -1,7 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Admin Paneli";
 }
-
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-4">
+        @TempData["SuccessMessage"]
+    </div>
+}
 <div class="container">
     <h2 class="text-center">Admin Paneline Hoş Geldiniz</h2>
 

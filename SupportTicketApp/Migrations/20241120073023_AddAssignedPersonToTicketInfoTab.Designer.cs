@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupportTicketApp.Models;
 
@@ -11,9 +12,11 @@ using SupportTicketApp.Models;
 namespace SupportTicketApp.Migrations
 {
     [DbContext(typeof(SupportTicketDbContext))]
-    partial class SupportTicketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241120073023_AddAssignedPersonToTicketInfoTab")]
+    partial class AddAssignedPersonToTicketInfoTab
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,12 +196,13 @@ namespace SupportTicketApp.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Urgency")
+                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserTabUserId")
+                    b.Property<int>("UserTabUserId")
                         .HasColumnType("int");
 
                     b.HasKey("TicketId");
@@ -366,7 +370,9 @@ namespace SupportTicketApp.Migrations
 
                     b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
                         .WithMany()
-                        .HasForeignKey("UserTabUserId");
+                        .HasForeignKey("UserTabUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("AssignedPerson");
 

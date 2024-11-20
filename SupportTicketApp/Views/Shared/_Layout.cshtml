@@ -59,13 +59,13 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="AssignedTickets">Çalışana Atanmış Biletler</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Privacy">Ayarlar</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
                                 </li>
                             }
                             else if (userType == UserType.SonKullanici)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="ViewTickets">Destek Biletleri Listesi</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Destek Biletleri Listesi</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>

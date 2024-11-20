@@ -41,15 +41,15 @@ namespace SupportTicketApp.Controllers
             {
                 return View(model);
             }
-            byte[] profilePhotoData = null;
-            if (model.ProfilePhoto != null)
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await model.ProfilePhoto.CopyToAsync(memoryStream);
-                    profilePhotoData = memoryStream.ToArray();
-                }
-            }
+            //byte[] profilePhotoData = null;
+            //if (model.ProfilePhoto != null)
+            //{
+            //    using (var memoryStream = new MemoryStream())
+            //    {
+            //        await model.ProfilePhoto.CopyToAsync(memoryStream);
+            //        profilePhotoData = memoryStream.ToArray();
+            //    }
+            //}
 
             var user = new UserTab 
             {
@@ -60,7 +60,9 @@ namespace SupportTicketApp.Controllers
                 Name = model.Name, 
                 CreatedDate = DateTime.Now,
                 Status = true,
-                ProfilePhoto = profilePhotoData 
+                //ProfilePhoto = profilePhotoData 
+                ProfilePhoto = new byte[0] // Boş bir fotoğraf yerine, kullanıcıya profil fotoğrafı atanmayacak.
+
 
             };
             string salt = SupportTicketApp.Models.UserTab.GenerateSalt();
@@ -70,18 +72,18 @@ namespace SupportTicketApp.Controllers
             _context.UserTabs.Add(user);
             await _context.SaveChangesAsync();
 
-            ViewBag.Message = "Kullanıcı başarıyla oluşturuldu.";
+            TempData["SuccessMessage"] = "Kullanıcı başarıyla oluşturuldu.";
             return RedirectToAction("Index");
 
         }
-        private async Task<byte[]> ConvertToBytes(IFormFile file)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                await file.CopyToAsync(memoryStream);
-                return memoryStream.ToArray();
-            }
-        }
+        //private async Task<byte[]> ConvertToBytes(IFormFile file)
+        //{
+        //    using (var memoryStream = new MemoryStream())
+        //    {
+        //        await file.CopyToAsync(memoryStream);
+        //        return memoryStream.ToArray();
+        //    }
+        //}
 
         // Tüm Biletler
         public async Task<IActionResult> AllTickets()

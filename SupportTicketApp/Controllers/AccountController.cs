@@ -244,6 +244,7 @@ namespace SupportTicketApp.Controllers
 
                 _context.UserTabs.Add(user);
                 _context.SaveChanges();
+                TempData["SuccessMessage"] = "Başarıyla kaydoldunuz.Lütfen giriş yapın.";
 
                 return RedirectToAction("Login");
             }

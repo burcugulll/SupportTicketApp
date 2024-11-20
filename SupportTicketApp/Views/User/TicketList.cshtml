@@ -13,8 +13,8 @@
             <th>Açıklama</th>
             <th>Aciliyet</th>
             <th>Oluşturulma Tarihi</th>
-@*             <th>İşlemler</th>
- *@        </tr>
+            <th>İşlemler</th>
+        </tr>
     </thead>
     <tbody>
         @foreach (var ticket in Model)
@@ -22,14 +22,13 @@
             <tr>
                 <td>@ticket.Title</td>
                 <td>@ticket.Description</td>
-                <td>@ticket.Urgency.ToString()</td>
+                <td>@ticket.Urgency</td>
                 <td>@ticket.CreatedDate</td>
-                @* <td>
+                <td>
                     <a href="@Url.Action("AddComment", "User", new { ticketId = ticket.TicketId })">Yorum Ekle</a>
-                </td> *@
+                </td>
             </tr>
         }
-        
     </tbody>
 </table>
 

@@ -14,6 +14,8 @@ namespace SupportTicketApp.Models
         public DbSet<TicketImage> TicketImages { get; set; }
         public DbSet<TicketCommentImage> TicketCommentImages { get; set; }
         public DbSet<CommentImageJunction> CommentImages { get; set; }
+        public DbSet<UserTab> Users { get; set; }  
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

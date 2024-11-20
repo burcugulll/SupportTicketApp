@@ -3,6 +3,12 @@
 @{
     ViewData["Title"] = "Giriş Yap";
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-4">
+        @TempData["SuccessMessage"]
+    </div>
+}
 <style>
     .background-image {
         background-image: url('/images/ticket-background.jpg?v=2');

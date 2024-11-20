@@ -1,6 +1,15 @@
-﻿namespace SupportTicketApp.Controllers
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace SupportTicketApp.Controllers
 {
-    public class EmployeeController
+    [Authorize(Roles = "Calisan")]
+
+    public class EmployeeController :Controller
     {
+        public IActionResult Index()
+        {
+            return View();
+        }
     }
 }
