@@ -1,0 +1,34 @@
+﻿@model SupportTicketApp.Models.TicketInfoTab
+
+@{
+    ViewData["Title"] = "Bilet Silme";
+}
+
+<h1>Bilet Silme</h1>
+
+<p>Are you sure you want to delete this ticket?</p>
+
+<table class="table">
+    <tr>
+        <th>Başlık</th>
+        <td>@Model.Title</td>
+    </tr>
+    <tr>
+        <th>Açıklama</th>
+        <td>@Model.Description</td>
+    </tr>
+    <tr>
+        <th>Aciliyet</th>
+        <td>@Model.Urgency.ToString()</td>
+    </tr>
+    <tr>
+        <th>Oluşturulma Tarihi</th>
+        <td>@Model.CreatedDate</td>
+    </tr>
+</table>
+
+<form asp-action="DeleteTicket" method="post">
+    <input type="hidden" name="ticketId" value="@Model.TicketId" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a href="@Url.Action("Index", "User")" class="btn btn-secondary">Geri</a>
+</form>

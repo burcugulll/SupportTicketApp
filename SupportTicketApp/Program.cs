@@ -52,6 +52,14 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    if (response.StatusCode == StatusCodes.Status403Forbidden)
+    {
+        await response.WriteAsync("Bu iþlem için yetkiniz yok.");
+    }
+});
 
 app.MapControllerRoute(
     name: "default",

@@ -5,7 +5,12 @@
 }
 
 <h1>Destek Biletleri</h1>
-
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Message
+    </div>
+}
 <table class="table">
     <thead>
         <tr>
@@ -13,8 +18,8 @@
             <th>Açıklama</th>
             <th>Aciliyet</th>
             <th>Oluşturulma Tarihi</th>
-@*             <th>İşlemler</th>
- *@        </tr>
+             <th>İşlemler</th>
+        </tr>
     </thead>
     <tbody>
         @foreach (var ticket in Model)
@@ -24,9 +29,28 @@
                 <td>@ticket.Description</td>
                 <td>@ticket.Urgency.ToString()</td>
                 <td>@ticket.CreatedDate</td>
-                @* <td>
-                    <a href="@Url.Action("AddComment", "User", new { ticketId = ticket.TicketId })">Yorum Ekle</a>
-                </td> *@
+                <td>
+                     @if (ticket.Status == true)  
+                    {
+                        @* Düzenle ve Sil butonları yalnızca silinmemiş biletler için görünsün *@
+                        @if (!ticket.AssignedPersonId.HasValue)
+                        {
+                            <a href="@Url.Action("EditTicket", "User", new { id = ticket.TicketId })" class="btn btn-warning">Düzenle</a>
+                            <form asp-action="DeleteTicket" method="post" class="d-inline">
+                                <input type="hidden" name="ticketId" value="@ticket.TicketId" />
+                                <button type="submit" class="btn btn-danger">Sil</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Atanmış</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">Silinmiş</span> 
+                    }
+                </td>
             </tr>
         }
         
