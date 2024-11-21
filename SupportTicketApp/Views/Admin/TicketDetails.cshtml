@@ -73,5 +73,18 @@
             <input type="hidden" name="id" value="@Model.TicketId" />
             <button type="submit" class="btn btn-warning btn-lg mx-2">Durumu Güncelle</button>
         </form>
+        <a asp-action="ExportToPdf" asp-route-ticketId="@Model.TicketId" class="btn btn-secondary">PDF İndir</a>
+        <form asp-action="AssignUsersToTicket" method="post">
+            <input type="hidden" name="ticketId" value="@Model.TicketId" />
+            <label for="userSelect">Personel Ata:</label>
+            <select id="userSelect" name="userIds" multiple class="form-control">
+                @foreach (var user in ViewBag.Users)
+                {
+                    <option value="@user.UserId">@user.Name</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-primary mt-2">Ata</button>
+        </form>
+
     </div>
 </div>

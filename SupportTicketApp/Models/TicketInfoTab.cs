@@ -25,13 +25,13 @@ namespace SupportTicketApp.Models
         public DateTime? DeletedDate { get; set; }
 
         public bool Status { get; set; } = true;
-        
+        public bool IsCompleted { get; set; }
+
         public int UserId { get; set; }
         public virtual TicketImage? TicketImage { get; set; } // İlişkilendirilen resim
         public virtual ICollection<TicketInfoCommentTab>? Comments { get; set; } // Bilete ait yorumlar
         public virtual UserTab? UserTab { get; set; }
-        // Personel (assigned person) ile ilişkilendirme
-        public int? AssignedPersonId { get; set; } // Bu, atanmış personelin UserId'si
-        public virtual UserTab? AssignedPerson { get; set; } // Personel (user) ile ilişki
+        public ICollection<UserTab> AssignedPerson { get; set; } = new List<UserTab>(); // Personel koleksiyonu
+
     }
 }

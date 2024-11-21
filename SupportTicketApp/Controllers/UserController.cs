@@ -117,7 +117,7 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
 
-            if (ticket.AssignedPersonId.HasValue)
+            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
             {
                 return Forbid("Atanmış bir bilet silinemez.");
             }
@@ -143,7 +143,7 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
-            if (ticket.AssignedPersonId.HasValue)
+            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
             {
                 if (ticket.UserTab.UserName != currentUserName)
                 {
@@ -172,7 +172,7 @@ namespace SupportTicketApp.Controllers
 
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
 
-            if (ticket.AssignedPersonId.HasValue)
+            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
             {
                 if (ticket.UserTab != null && ticket.UserTab.UserName != currentUserName)
                 {
@@ -180,7 +180,7 @@ namespace SupportTicketApp.Controllers
                 }
             }
 
-            if (ticket.UserTab != null && ticket.UserTab.UserName == currentUserName || ticket.AssignedPersonId == null)
+            if ((ticket.UserTab != null && ticket.UserTab.UserName == currentUserName) || !ticket.AssignedPerson.Any())
 
             {
                 // Bilet güncelleme

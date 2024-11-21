@@ -33,7 +33,7 @@
                      @if (ticket.Status == true)  
                     {
                         @* Düzenle ve Sil butonları yalnızca silinmemiş biletler için görünsün *@
-                        @if (!ticket.AssignedPersonId.HasValue)
+                        @if (ticket.AssignedPerson == null || !ticket.AssignedPerson.Any())
                         {
                             <a href="@Url.Action("EditTicket", "User", new { id = ticket.TicketId })" class="btn btn-warning">Düzenle</a>
                             <form asp-action="DeleteTicket" method="post" class="d-inline">
