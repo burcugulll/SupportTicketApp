@@ -20,35 +20,36 @@ namespace SupportTicketApp.Controllers
         }
 
 
-        public async Task<IActionResult> Index()
-        {
-            // Veritabanındaki TicketInfoTab kayıtlarını getiriyoruz.
-            var tickets = await dbContext.TicketInfoTabs
-                .Include(t => t.UserTab) // Kullanıcı bilgilerini çekmek için.
-                .ToListAsync();
-
-            // Razor sayfasına model olarak gönderiyoruz.
-            return View(tickets);
-        }
-
-
         //public async Task<IActionResult> Index()
         //{
-        //    var userName = User.Identity.Name;
-        //    var user = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName);
-
-        //    if (user == null)
-        //    {
-        //        return NotFound("Kullanıcı bulunamadı.");
-        //    }
-
-        //    // Kullanıcıya ait biletleri getir
         //    var tickets = await dbContext.TicketInfoTabs
-        //        .Where(t => t.UserId == user.UserId)
+        //        .Include(t => t.UserTab) 
         //        .ToListAsync();
 
         //    return View(tickets);
         //}
+
+        public async Task<IActionResult> Index()
+        {
+            // Giriş yapan kullanıcının adını al
+            var currentUserName = User.Identity.Name;
+
+            // Kullanıcı adı üzerinden UserId'yi bul
+            var currentUser = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == currentUserName);
+
+            if (currentUser == null)
+            {
+                return Unauthorized("Kullanıcı bulunamadı.");
+            }
+
+            // Yalnızca giriş yapan kullanıcının biletlerini getir
+            var tickets = await dbContext.TicketInfoTabs
+                .Include(t => t.UserTab) // UserTab bilgisi dahil ediliyor
+                .Where(t => t.UserId == currentUser.UserId) // Giriş yapan kullanıcının UserId'sine göre filtreleme
+                .ToListAsync();
+
+            return View(tickets);
+        }
 
         // Yeni bilet oluşturma
         [HttpGet]
@@ -63,7 +64,6 @@ namespace SupportTicketApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Kullanıcıyı al
                 var userName = User.Identity.Name;
                 var user = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName);
                 if (user == null)
@@ -71,16 +71,14 @@ namespace SupportTicketApp.Controllers
                     ModelState.AddModelError("", "Kullanıcı bulunamadı.");
                     return View(model);
                 }
-                //Console.WriteLine($"Title: {model.Title}, Description: {model.Description}, Urgency: {model.Urgency}");
 
                 var newTicket = new TicketInfoTab
                 {
                     Title = model.Title,
                     Description = model.Description,
                     Urgency = model.Urgency,
-                    //UserId = GetCurrentUserId(),
-                    UserId = user.UserId,  // Kullanıcı ID'si
-                    CreatedDate = DateTime.Now, // Şu anki tarihi ata
+                    UserId = user.UserId,  
+                    CreatedDate = DateTime.Now, 
                     //Status = true
 
                 };
@@ -96,19 +94,15 @@ namespace SupportTicketApp.Controllers
                 }
 
 
-                //dbContext.TicketInfoTabs.Add(newTicket);
-
-                //await dbContext.SaveChangesAsync();
-                //return RedirectToAction("Index", "User");
             }
             return View(model);
         }
         // Destek biletlerinin listelenmesi
         public IActionResult TicketList()
         {
-            var userId = int.Parse(User.Identity.Name); // string olan userId'yi int'e dönüştürüyoruz
+            var userId = int.Parse(User.Identity.Name); 
             var tickets = dbContext.TicketInfoTabs
-                .Where(t => t.UserId == userId) // Kullanıcının sadece kendi biletlerini listele
+                .Where(t => t.UserId == userId) 
                 .ToList();
 
             return View(tickets);
@@ -127,19 +121,13 @@ namespace SupportTicketApp.Controllers
             {
                 return Forbid("Atanmış bir bilet silinemez.");
             }
-            ticket.DeletedDate = DateTime.Now;  // Silinme tarihi ekleniyor
-            ticket.Status = false;              // Durum false olarak güncelleniyor
+            ticket.DeletedDate = DateTime.Now;  
+            ticket.Status = false;              
 
-            // Güncellenmiş veriyi kaydediyoruz
             dbContext.TicketInfoTabs.Update(ticket);
             await dbContext.SaveChangesAsync();
 
-            // Güncellenen listeyi göstermek için index sayfasına yönlendiriyoruz
             return RedirectToAction("Index");
-            //dbContext.TicketInfoTabs.Remove(ticket);
-            //await dbContext.SaveChangesAsync();
-
-            //return RedirectToAction("Index");
         }
 
 
@@ -147,7 +135,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> EditTicket(int id)
         {
             var ticket = await dbContext.TicketInfoTabs
-                                        .Include(t => t.UserTab) // Kullanıcı bilgilerini almak için
+                                        .Include(t => t.UserTab)
                                         .FirstOrDefaultAsync(t => t.TicketId == id);
 
             if (ticket == null)
@@ -155,33 +143,27 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
-            // Eğer bilet bir personele atanmışsa, sadece yorum eklenebilir
             if (ticket.AssignedPersonId.HasValue)
             {
-                // Eğer kullanıcı, atanmış biletin sahibi değilse düzenleme izni verilmeyecek
                 if (ticket.UserTab.UserName != currentUserName)
                 {
                     return Forbid("Atanmış bir bilet üzerinde işlem yapma yetkiniz yok.");
                 }
-                // Eğer bilet atanmışsa sadece yorum eklenmesine izin verilmeli
-                ViewBag.CanEdit = false;  // Düzenleme yapılmaması için flag ekleyin
+                ViewBag.CanEdit = false;  
             }
             else
             {
-                // Bilet atanmadıysa düzenleme yapılabilir
-                ViewBag.CanEdit = true; // Düzenleme yapılabilir
+                ViewBag.CanEdit = true; 
             }
 
             return View(ticket);
         }
 
-
         [HttpPost]
         public async Task<IActionResult> EditTicket(TicketInfoTab model)
         {
-            //var ticket = await dbContext.TicketInfoTabs.FindAsync(model.TicketId);
             var ticket = await dbContext.TicketInfoTabs
-       .Include(t => t.UserTab)  // UserTab'ı da dahil ediyoruz
+       .Include(t => t.UserTab)  
        .FirstOrDefaultAsync(t => t.TicketId == model.TicketId);
             if (ticket == null)
             {
@@ -190,21 +172,16 @@ namespace SupportTicketApp.Controllers
 
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
 
-            // Eğer bilet atanmışsa, sadece yorum eklenebilir
             if (ticket.AssignedPersonId.HasValue)
             {
                 if (ticket.UserTab != null && ticket.UserTab.UserName != currentUserName)
-
-                //if (ticket.UserTab.UserName != currentUserName)
                 {
                     return Forbid("Atanmış bir bilet üzerinde işlem yapma yetkiniz yok.");
                 }
             }
 
-            // Kendi biletini düzenleyebilmesi için
             if (ticket.UserTab != null && ticket.UserTab.UserName == currentUserName || ticket.AssignedPersonId == null)
 
-            //if (ticket.UserTab.UserName == currentUserName || ticket.AssignedPersonId == null)
             {
                 // Bilet güncelleme
                 ticket.Title = model.Title;
@@ -215,7 +192,7 @@ namespace SupportTicketApp.Controllers
                 dbContext.TicketInfoTabs.Update(ticket);
                 await dbContext.SaveChangesAsync();
                 ViewBag.Message = "Bilet başarıyla güncellendi.";
-                return RedirectToAction("Index", "User");  // Başarıyla güncellendikten sonra yönlendiriyoruz
+                return RedirectToAction("Index", "User");  
 
 
             }
@@ -224,16 +201,8 @@ namespace SupportTicketApp.Controllers
                 return Forbid("Bu bilet üzerinde işlem yapma yetkiniz yok.");
             }
 
-            //return RedirectToAction("Index", "User");
         }
 
-        //// Yorum ekleme
-        //[HttpGet]
-        //public IActionResult AddComment(int ticketId)
-        //{
-        //    ViewBag.TicketId = ticketId;
-        //    return View();
-        //}
 
         [HttpPost]
         public async Task<IActionResult> AddComment(int ticketId, string comment)
@@ -247,7 +216,6 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
 
-            // Yorum ekleme işlemi
             var newComment = new TicketInfoCommentTab
             {
                 TicketId = ticketId,
@@ -261,17 +229,17 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("Details", new { id = ticketId });
         }
 
-        // Yardımcı metod: E-posta gönderimi
+        //  E-posta gönderimi
         private void SendEmail(string to, string subject, string body)
         {
-            // SMTP üzerinden e-posta gönderme işlemi burada yapılır
+            // SMTP üzerinden e-posta gönderme işlemi burada yapılcak
         }
 
-        // Yardımcı metod: Giriş yapan kullanıcının ID'sini almak
+        //  Giriş yapan kullanıcının ID'sini almak
         private int GetCurrentUserId()
         {
-            // Burada, giriş yapan kullanıcının ID'sini almak için ilgili yöntemi kullanın
-            // Örneğin, kullanıcıyı Identity üzerinden alabilirsiniz
+            // Burada, giriş yapan kullanıcının ID'sini almak için ilgili yöntemi kullanılmalı
+            //  kullanıcıyı Identity üzerinden alsak
             return 1; // Örnek olarak 1 döndürülüyor
         }
     }

@@ -21,10 +21,13 @@
                 <td>@user.UserType.ToString()</td>
                 <td>@(user.Status ? "Aktif" : "Pasif")</td>
                 <td>
-                    <form asp-action="DeleteUser" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@user.UserId" />
-                        <button type="submit" class="btn btn-danger">Sil</button>
-                    </form>
+                    @if (user.Status) 
+                    {
+                        <form asp-action="DeleteUser" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@user.UserId" />
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </form>
+                    }
                     <a asp-action="EditUser" asp-route-id="@user.UserId" class="btn btn-primary">Düzenle</a>
                 </td>
             </tr>
