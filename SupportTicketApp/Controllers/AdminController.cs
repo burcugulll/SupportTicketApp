@@ -185,13 +185,14 @@ namespace SupportTicketApp.Controllers
         }
 
         // Bilet Sil 
-        public async Task<IActionResult> DeleteTicket(int id)
+        public async Task<IActionResult> DeleteTicket(int ticketId)
         {
-            var ticket = await _context.TicketInfoTabs.FindAsync(id);
+            var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
             if (ticket == null)
                 return NotFound();
 
             ticket.Status = false;
+            ticket.IsCompleted = true;
             ticket.DeletedDate = DateTime.Now;
             await _context.SaveChangesAsync();
             if (ticket.UserTab == null) 
@@ -207,6 +208,35 @@ namespace SupportTicketApp.Controllers
                 return RedirectToAction(nameof(AllTickets));
             }
         }
+
+        public async Task<IActionResult> CompleteTicket(int ticketId)
+        {
+            // Bileti veritabanından bul
+            var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
+            if (ticket == null)
+            {
+                return NotFound(); // Eğer bilet bulunmazsa, hata döndür
+            }
+
+            // Biletin durumunu 'Tamamlandı' olarak işaretle
+            ticket.IsCompleted = true;
+
+            //ticket.Status = false; // OngoingTickets'ten silmek için Status değerini false yapıyoruz
+            await _context.SaveChangesAsync(); // Değişiklikleri kaydet
+
+            // Biletin bağlı olduğu kullanıcı var mı?
+            if (ticket.UserTab == null)
+            {
+                // Eğer biletin atanmış kullanıcısı yoksa, 'UnassignedTickets' sayfasına yönlendir
+                return RedirectToAction(nameof(UnassignedTickets));
+            }
+            else
+            {
+                // Bilet tamamlandığı için artık OngoingTickets'te görünmemeli
+                return RedirectToAction(nameof(OngoingTickets));
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> BulkUpdateTickets(int[] ticketIds, string action)
         {
@@ -231,6 +261,7 @@ namespace SupportTicketApp.Controllers
                 case "complete":
                     foreach (var ticket in tickets)
                     {
+
                         ticket.IsCompleted = true;
                         ticket.ModifiedDate = DateTime.Now;
                     }
@@ -240,7 +271,9 @@ namespace SupportTicketApp.Controllers
                 case "delete":
                     foreach (var ticket in tickets)
                     {
+
                         ticket.Status = false; // Pasif
+                        ticket.IsCompleted = false;
                         ticket.DeletedDate = DateTime.Now;
                     }
                     TempData["SuccessMessage"] = $"Seçili {tickets.Count} bilet başarıyla silindi.";
