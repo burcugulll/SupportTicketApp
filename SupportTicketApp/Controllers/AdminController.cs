@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
+using System.IO;
+using iText.IO.Font;
+using iText.Kernel.Font;
+
+
 namespace SupportTicketApp.Controllers
 {
     [Authorize(Roles = "Yonetici")]
@@ -32,7 +37,6 @@ namespace SupportTicketApp.Controllers
             return View(userLogs);
         }
 
-        // GET: Yeni Kullanıcı Ekleme Sayfası
         public IActionResult CreateUser()
         {
             return View(new CreateUserViewModel());
@@ -121,25 +125,6 @@ namespace SupportTicketApp.Controllers
             return View(users);
         }
 
-
-
-        //public async Task<IActionResult> TicketDetails(int id)
-        //{
-        //    var ticket = await _context.TicketInfoTabs
-        //        .Include(t => t.UserTab)
-        //        .Include(t => t.TicketImage)
-        //        .Include(t => t.Comments)
-        //            .ThenInclude(c => c.CommentImages)
-        //        .FirstOrDefaultAsync(t => t.TicketId == id);
-
-        //    if (ticket == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(ticket);
-        //}
-        
         
         public IActionResult TicketDetails(int ticketId)
         {
@@ -159,7 +144,6 @@ namespace SupportTicketApp.Controllers
 
             return View(ticket); // Bu durumda view adı TicketDetails.cshtml olacaktır
         }
-
 
 
         [HttpPost]
@@ -268,7 +252,7 @@ namespace SupportTicketApp.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("AllTickets"); // Güncellenen verileri görmek için aynı sayfaya yönlendir.
+            return RedirectToAction("AllTickets"); 
 
             //return RedirectToAction("OngoingTickets", "Admin");
         }
@@ -289,23 +273,28 @@ namespace SupportTicketApp.Controllers
                 var writer = new PdfWriter(stream);
                 var pdf = new PdfDocument(writer);
                 var document = new iText.Layout.Document(pdf);
+                var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "arial.ttf");
 
-                document.Add(new Paragraph($"Bilet ID: {ticket.TicketId}"));
-                document.Add(new Paragraph($"Başlık: {ticket.Title}"));
-                document.Add(new Paragraph($"Açıklama: {ticket.Description}"));
-                document.Add(new Paragraph($"Durum: {(ticket.Status ? "Aktif" : "Tamamlanmış")}"));
-                document.Add(new Paragraph($"Oluşturma Tarihi: {ticket.CreatedDate}"));
+                var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H); // 'true' burada fontu embed edecektir.
+                document.Add(new Paragraph($"Bilet ID: {ticket.TicketId}").SetFont(font));
+                document.Add(new Paragraph($"Başlık: {ticket.Title}").SetFont(font));
+                document.Add(new Paragraph($"Açıklama: {ticket.Description}").SetFont(font));
+                document.Add(new Paragraph($"Öncelik: {ticket.Urgency}").SetFont(font));
+                document.Add(new Paragraph($"Durum: {(ticket.Status ? "Aktif" : "Pasif")}").SetFont(font));
+                document.Add(new Paragraph($"Oluşturma Tarihi: {ticket.CreatedDate.ToString("dd.MM.yyyy")}").SetFont(font));
+               
 
                 if (ticket.Comments != null && ticket.Comments.Any())
                 {
-                    document.Add(new Paragraph("Yorumlar:"));
+                    document.Add(new Paragraph("Yorumlar:").SetFont(font));
                     foreach (var comment in ticket.Comments)
                     {
-                        document.Add(new Paragraph($"- {comment.Title}: {comment.Description}"));
+                        document.Add(new Paragraph($"- {comment.Title}: {comment.Description}").SetFont(font));
                     }
                 }
 
                 document.Close();
+
                 return File(stream.ToArray(), "application/pdf", $"Ticket_{ticketId}.pdf");
             }
         }
@@ -331,10 +320,6 @@ namespace SupportTicketApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("TicketDetail", new { id = ticketId });
         }
-
-
-
-
     }
 }
     

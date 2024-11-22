@@ -23,6 +23,10 @@
                 <td>@Model.Urgency</td>
             </tr>
             <tr>
+                <th>Açıklama</th>
+                <td>@Model.Description</td>
+            </tr>
+            <tr>
                 <th>Oluşturan Kullanıcı</th>
                 <td>@Model.UserTab?.UserName ?? "Atanmamış"</td>
             </tr>
@@ -53,7 +57,7 @@
         }
 
 
-        <!-- Yeni Yorum Ekleme -->
+       @*  <!-- Yeni Yorum Ekleme -->
         <form asp-action="AddComment" method="post">
             <input type="hidden" name="ticketId" value="@Model.TicketId" />
             <div class="form-group">
@@ -65,9 +69,31 @@
                 <textarea class="form-control" id="commentDescription" name="commentDescription" required></textarea>
             </div>
             <button type="submit" class="btn btn-success mt-3">Yorum Ekle</button>
+        </form> *@
+    </div>
+    <!-- Personel Ata -->
+    <div class="assign-personnel">
+        <h3>Personel Ata</h3>
+        <form asp-action="AssignUsersToTicket" method="post">
+            <input type="hidden" name="ticketId" value="@Model.TicketId" />
+            <label for="userSelect">Personel Ata:</label>
+            <select id="Users" name="UserId" class="form-select" multiple>
+                @if (ViewBag.Users != null)
+                {
+                    foreach (var user in ViewBag.Users)
+                    {
+                        <option value="@user.UserId">@user.Name</option>
+                    }
+                }
+                else
+                {
+                    <option value="">Kullanıcı bulunamadı</option>
+                }
+            </select>
+
+            <button type="submit" class="btn btn-primary mt-2">Ata</button>
         </form>
     </div>
-
     <!-- İşlemler ve Butonlar -->
     <div class="btn-group mt-4 d-flex justify-content-center" role="group">
         <a asp-controller="Admin" asp-action="AllTickets" class="btn btn-primary btn-lg mx-2">Tüm Biletler</a>
@@ -82,7 +108,7 @@
             <button type="submit" class="btn btn-warning btn-lg mx-2">Durumu Güncelle</button>
         </form>
         <a asp-action="ExportToPdf" asp-route-ticketId="@Model.TicketId" class="btn btn-secondary">PDF İndir</a>
-        <form asp-action="AssignUsersToTicket" method="post">
+        @* <form asp-action="AssignUsersToTicket" method="post">
             <input type="hidden" name="ticketId" value="@Model.TicketId" />
             <label for="userSelect">Personel Ata:</label>
             <select id="Users" name="UserId" class="form-select">
@@ -100,7 +126,7 @@
             </select>
 
             <button type="submit" class="btn btn-primary mt-2">Ata</button>
-        </form>
+        </form> *@
 
     </div>
 </div>

@@ -19,5 +19,13 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: 'Arial', sans-serif;
 }
+@font-face {
+    font-family: 'Arial';
+    src: url('/fonts/arial.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
