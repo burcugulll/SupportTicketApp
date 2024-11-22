@@ -5,6 +5,7 @@ namespace SupportTicketApp.Models
 {
     public class SupportTicketDbContext : DbContext
     {
+
         public SupportTicketDbContext(DbContextOptions<SupportTicketDbContext> options) : base(options) { }
 
         public DbSet<UserTab> UserTabs { get; set; }

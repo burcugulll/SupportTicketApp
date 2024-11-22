@@ -139,16 +139,23 @@ namespace SupportTicketApp.Controllers
 
         //    return View(ticket);
         //}
+        
+        
         public IActionResult TicketDetails(int ticketId)
         {
             var ticket = _context.TicketInfoTabs
                 .Include(t => t.AssignedPerson)
+                .Include(t => t.Comments)      // Comments ilişkisini dahil et
                 .FirstOrDefault(t => t.TicketId == ticketId);
 
             if (ticket == null)
             {
                 return NotFound();
             }
+            ViewBag.Users = _context.UserTabs
+                .Where(u => u.UserType != UserType.Yonetici)
+       .Select(u => new { u.UserId, u.Name }) // Gerekli alanları seç
+       .ToList();
 
             return View(ticket); // Bu durumda view adı TicketDetails.cshtml olacaktır
         }
@@ -261,8 +268,9 @@ namespace SupportTicketApp.Controllers
             }
 
             await _context.SaveChangesAsync();
+            return RedirectToAction("AllTickets"); // Güncellenen verileri görmek için aynı sayfaya yönlendir.
 
-            return RedirectToAction("OngoingTickets", "Admin");
+            //return RedirectToAction("OngoingTickets", "Admin");
         }
 
 
