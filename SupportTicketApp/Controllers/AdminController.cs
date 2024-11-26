@@ -138,7 +138,7 @@ namespace SupportTicketApp.Controllers
                 return NotFound();
             }
             ViewBag.Users = _context.UserTabs
-                .Where(u => u.UserType != UserType.Yonetici)
+                .Where(u => u.UserType == UserType.Calisan)
        .Select(u => new { u.UserId, u.Name }) // Gerekli alanları seç
        .ToList();
 
@@ -331,28 +331,104 @@ namespace SupportTicketApp.Controllers
                 return File(stream.ToArray(), "application/pdf", $"Ticket_{ticketId}.pdf");
             }
         }
+        //[HttpPost]
+        //public async Task<IActionResult> AssignUsersToTicket(int ticketId, int userId)
+        //{
+        //    // Bilet verisini alın
+        //    var ticket = await _context.TicketInfoTabs
+        //        .Include(t => t.AssignedPerson) // AssignedPerson ile ilişki
+        //        .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+        //    if (ticket == null)
+        //    {
+        //        return NotFound(); // Bilet bulunamadı
+        //    }
+
+        //    // Kullanıcı verisini alın
+        //    var user = await _context.Users
+        //        .Include(u => u.AssignedTickets) // AssignedTickets ile ilişki
+        //        .FirstOrDefaultAsync(u => u.UserId == userId);
+
+        //    if (user == null)
+        //    {
+        //        return NotFound(); // Kullanıcı bulunamadı
+        //    }
+
+        //    // Bilet ile kullanıcıyı ilişkilendir
+        //    if (!ticket.AssignedPerson.Contains(user))
+        //    {
+        //        ticket.AssignedPerson.Add(user); // Bilete kullanıcıyı ekle
+        //    }
+
+        //    if (!user.AssignedTickets.Contains(ticket))
+        //    {
+        //        user.AssignedTickets.Add(ticket); // Kullanıcıya bileti ekle
+        //    }
+
+        //    // Değişiklikleri kaydet
+        //    await _context.SaveChangesAsync();
+
+        //    TempData["SuccessMessage"] = "Personel başarıyla atandı!";
+        //    return RedirectToAction("TicketDetails", new { ticketId });
+        //}
+
+
 
         [HttpPost]
         public async Task<IActionResult> AssignUsersToTicket(int ticketId, int[] userIds)
         {
+            // Bilet verisini alın
             var ticket = await _context.TicketInfoTabs
-                .Include(t => t.AssignedPerson)
+                .Include(t => t.AssignedPerson) // Atanmış personel bilgilerini de dahil et
                 .FirstOrDefaultAsync(t => t.TicketId == ticketId);
 
             if (ticket == null)
+            {
+                // Bilet bulunamadı
                 return NotFound();
+            }
 
+            // Kullanıcıları bilet ile ilişkilendir
             foreach (var userId in userIds)
             {
-                if (!ticket.AssignedPerson.Any(u => u.UserId == userId))
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null && !ticket.AssignedPerson.Any(a => a.UserId == userId))
                 {
-                    ticket.AssignedPerson.Add(new UserTab { UserId = userId });
+                    ticket.AssignedPerson.Add(user); // Kullanıcıyı assignedPerson koleksiyonuna ekle
                 }
             }
 
+            // Değişiklikleri kaydedin
             await _context.SaveChangesAsync();
-            return RedirectToAction("TicketDetail", new { id = ticketId });
+            TempData["SuccessMessage"] = "Personel başarıyla atandı!";
+
+
+            return RedirectToAction("TicketDetails", new { ticketId });
         }
+
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> AssignUsersToTicket(int ticketId, int[] userIds)
+        //{
+        //    var ticket = await _context.TicketInfoTabs
+        //        .Include(t => t.AssignedPerson)
+        //        .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+        //    if (ticket == null)
+        //        return NotFound();
+
+        //    foreach (var userId in userIds)
+        //    {
+        //        if (!ticket.AssignedPerson.Any(u => u.UserId == userId))
+        //        {
+        //            ticket.AssignedPerson.Add(new UserTab { UserId = userId });
+        //        }
+        //    }
+
+        //    await _context.SaveChangesAsync();
+        //    return RedirectToAction("TicketDetail", new { id = ticketId });
+        //}
     }
 }
     

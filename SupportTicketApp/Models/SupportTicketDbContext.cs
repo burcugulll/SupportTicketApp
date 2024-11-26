@@ -21,6 +21,14 @@ namespace SupportTicketApp.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+       //     modelBuilder.Entity<TicketInfoTab>()
+       //.HasMany(t => t.AssignedPerson)  // TicketInfoTab ile UserTab arasındaki ilişki
+       //.WithMany(u => u.AssignedTickets)  // UserTab ile TicketInfoTab arasındaki ilişki
+       //.UsingEntity<Dictionary<string, object>>( // Ara tabloyu manuel oluşturuyoruz
+       //    "TicketUser",  // Ara tablo adı
+       //    j => j.HasOne<UserTab>().WithMany().HasForeignKey("UserId"), // UserTab'e bağlayan FK
+       //    j => j.HasOne<TicketInfoTab>().WithMany().HasForeignKey("TicketId") // TicketInfoTab'e bağlayan FK
+       //);
 
             // TicketInfoTab ile TicketImage ilişkisi
             modelBuilder.Entity<TicketInfoTab>()

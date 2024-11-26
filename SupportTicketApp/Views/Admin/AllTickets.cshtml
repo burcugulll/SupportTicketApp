@@ -59,7 +59,7 @@
                     <td>
                         <a asp-controller="Admin" asp-action="TicketDetails" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
                         <a asp-controller="Admin" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
-                        <a asp-controller="Admin" asp-action="DeleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Bilet Sil</a>
+                        <a asp-controller="Admin" asp-action="DeleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-danger">Bilet Sil</a>
                         <form asp-action="CompleteTicket" method="post" style="display:inline;">
                             <input type="hidden" name="ticketId" value="@ticket.TicketId" />
                             <button type="submit" class="btn btn-success">Tamamlandı</button>

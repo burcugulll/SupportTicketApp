@@ -28,10 +28,11 @@ namespace SupportTicketApp.Models
         public bool IsCompleted { get; set; }
 
         public int UserId { get; set; }
+        public virtual UserTab? UserTab { get; set; }
+
         public virtual TicketImage? TicketImage { get; set; } // İlişkilendirilen resim
         public virtual ICollection<TicketInfoCommentTab>? Comments { get; set; } // Bilete ait yorumlar
-        public virtual UserTab? UserTab { get; set; }
-        public ICollection<UserTab> AssignedPerson { get; set; } = new List<UserTab>(); // Personel koleksiyonu
+        public virtual ICollection<UserTab> AssignedPerson { get; set; } = new List<UserTab>(); // Personel koleksiyonu
 
     }
 }

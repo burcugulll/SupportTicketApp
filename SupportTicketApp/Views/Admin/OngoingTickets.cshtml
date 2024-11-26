@@ -34,11 +34,13 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="TicketDetail" asp-route-id="@ticket.TicketId" class="btn btn-info">Detay</a>
-                    <form asp-action="DeleteTicket" method="post" style="display:inline;">
+                    <a asp-controller="Admin" asp-action="TicketDetails" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
+                    <a asp-controller="Admin" asp-action="DeleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-danger">Bilet Sil</a>
+
+                    @* <form asp-action="DeleteTicket" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@ticket.TicketId" />
                         <button type="submit" class="btn btn-danger">Sil</button>
-                    </form>
+                    </form> *@
                 </td>
             </tr>
         }

@@ -35,6 +35,9 @@ namespace SupportTicketApp.Models
         public bool Status { get; set; } = true;
         public int LoginAttempts { get; set; }
         public DateTime? LockoutEndTime { get; set; }
+        //public virtual ICollection<TicketInfoTab> AssignedTickets { get; set; } = new List<TicketInfoTab>();
+
+
 
 
         public string HashPassword(string password)
