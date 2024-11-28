@@ -1,5 +1,6 @@
 ﻿@using SupportTicketApp.Enums
 @using SupportTicketApp.Models
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authentication.Cookies
 
 <!DOCTYPE html>
@@ -28,6 +29,24 @@
                             var userName = User.Identity.Name;
                             var userTypeClaim = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
                             UserType? userType = userTypeClaim != null ? Enum.Parse<UserType>(userTypeClaim.Value) : null;
+                            // Profil fotoğrafı
+
+                            var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string;
+
+                            <li class="nav-item ms-auto">
+                                <div class="d-flex align-items-center">
+                                    <a asp-area="" asp-controller="Home" asp-action="Settings" class="d-flex align-items-center">
+                                        @if (profilePhotoBase64 != null)
+                                        {
+                                            <img src="data:image/png;base64,@profilePhotoBase64" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/default.png" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        }
+                                    </a>
+                                </div>
+                            </li>
 
                             if (userType == UserType.Yonetici)
                             {
@@ -49,9 +68,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UnassignedTickets">Atanmamış Biletler</a>
                                 </li>
-                                <li class="nav-item">
+                                @* <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li>
+                                </li> *@
                             }
                             else if (userType == UserType.Calisan)
                             {
@@ -61,18 +80,18 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="AssignedTickets">Çalışana Atanmış Biletler</a>
                                 </li>
-                                <li class="nav-item">
+                                @* <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li>
+                                </li> *@
                             }
                             else if (userType == UserType.SonKullanici)
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Destek Biletleri Listesi</a>
                                 </li>
-                                <li class="nav-item">
+                                @* <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li>
+                                </li> *@
                             }
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">

@@ -71,6 +71,7 @@ namespace SupportTicketApp.Controllers
                     {
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.Role, user.UserType.ToString()) 
+
                     };
 
                         var claimsIdentity = new ClaimsIdentity(claims, "login");

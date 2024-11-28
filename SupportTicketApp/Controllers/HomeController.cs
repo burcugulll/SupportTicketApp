@@ -64,11 +64,20 @@ namespace SupportTicketApp.Controllers
                     user.ProfilePhoto = memoryStream.ToArray();
                 }
             }
+            //else if (user.ProfilePhoto == null || user.ProfilePhoto.Length == 0)
+            //{
+            //    // Eðer kullanýcý hiç fotoðraf yüklememiþse varsayýlan avatarý ayarla
+            //    var defaultAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/default.png");
+            //    if (System.IO.File.Exists(defaultAvatarPath))
+            //    {
+            //        user.ProfilePhoto = await System.IO.File.ReadAllBytesAsync(defaultAvatarPath);
+            //    }
+            //}
 
             // Veritabanýnda güncelleme
             _context.UserTabs.Update(user);
             await _context.SaveChangesAsync();
-
+            //ViewData["Message"] = "Profil bilgileriniz baþarýyla güncellendi.";
             ViewBag.Message = "Profil baþarýyla güncellendi.";
             return RedirectToAction("Settings");
         }
