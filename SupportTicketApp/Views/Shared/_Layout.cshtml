@@ -16,10 +16,10 @@
 <body>
     @{
         ViewData["Title"] = "Profil Ayarları";
-        // var profilePhotoBase64 = (string)TempData["ProfilePhotoBase64"]; 
-        // var profilePhotoBase64 = TempData["ProfilePhotoBase64"] as string; 
+        
 
-        var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string; 
+        // var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string; 
+
     }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -34,6 +34,8 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             var userName = User.Identity.Name;
+                            var profilePhotoBase64 = User.Claims.FirstOrDefault(c => c.Type == "ProfilePhoto")?.Value;
+
                             var userTypeClaim = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
                             UserType? userType = userTypeClaim != null ? Enum.Parse<UserType>(userTypeClaim.Value) : null;
                             // Profil fotoğrafı

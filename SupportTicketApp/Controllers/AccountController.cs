@@ -66,6 +66,7 @@ namespace SupportTicketApp.Controllers
                         };
                         _context.UserLogTabs.Add(userLog);
                         _context.SaveChanges();
+                        var base64ProfilePhoto = user.ProfilePhoto != null ? Convert.ToBase64String(user.ProfilePhoto) : null;
 
                         var claims = new List<Claim>
                     {
@@ -74,6 +75,11 @@ namespace SupportTicketApp.Controllers
 
 
                     };
+                        // Profil fotoğrafını Claim'e ekle
+                        if (base64ProfilePhoto != null)
+                        {
+                            claims.Add(new Claim("ProfilePhoto", base64ProfilePhoto));
+                        }
 
                         var claimsIdentity = new ClaimsIdentity(claims, "login");
 
