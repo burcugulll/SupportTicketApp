@@ -44,7 +44,7 @@ namespace SupportTicketApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(string Name, string Email, string Password, IFormFile ProfilePhoto)
+        public async Task<IActionResult> UpdateProfile(string UserName, string Name, string Email, string Password, IFormFile ProfilePhoto)
         {
             var userName = User.Identity.Name;
             var user = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName); 
@@ -53,7 +53,17 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Kullanýcý bulunamadý.");
             }
             bool changesMade = false;
-
+            if (user.UserName != UserName)
+            {
+                var existingUser = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == UserName);
+                if (existingUser != null)
+                {
+                    TempData["InfoMessage"] = "Bu kullanýcý adý zaten alýnmýþ.";
+                    return RedirectToAction("Settings");
+                }
+                user.UserName = UserName;
+                changesMade = true;
+            }
             if (user.Name != Name)
             {
                 user.Name = Name;
