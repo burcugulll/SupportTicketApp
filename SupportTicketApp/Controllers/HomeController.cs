@@ -44,16 +44,27 @@ namespace SupportTicketApp.Controllers
             {
                 return NotFound("Kullanýcý bulunamadý.");
             }
+            bool changesMade = false;
 
-            // Profil güncellemeleri
-            user.Name = Name;
-            user.Email = Email;
+            if (user.Name != Name)
+            {
+                user.Name = Name;
+                changesMade = true;
+            }
+
+            if (user.Email != Email)
+            {
+                user.Email = Email;
+                changesMade = true;
+            }
 
             if (!string.IsNullOrEmpty(Password))
             {
                 string salt = UserTab.GenerateSalt();
                 user.Salt = salt;
                 user.Password = user.HashPassword(Password);
+                changesMade = true;
+
             }
 
             if (ProfilePhoto != null && ProfilePhoto.Length > 0)
@@ -62,6 +73,8 @@ namespace SupportTicketApp.Controllers
                 {
                     await ProfilePhoto.CopyToAsync(memoryStream);
                     user.ProfilePhoto = memoryStream.ToArray();
+                    changesMade = true;
+
                 }
             }
             //else if (user.ProfilePhoto == null || user.ProfilePhoto.Length == 0)
@@ -74,11 +87,17 @@ namespace SupportTicketApp.Controllers
             //    }
             //}
 
-            // Veritabanýnda güncelleme
-            _context.UserTabs.Update(user);
-            await _context.SaveChangesAsync();
-            //ViewData["Message"] = "Profil bilgileriniz baþarýyla güncellendi.";
-            ViewBag.Message = "Profil baþarýyla güncellendi.";
+            if (changesMade)
+            {
+                _context.UserTabs.Update(user);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Profil baþarýyla güncellendi.";
+            }
+            else
+            {
+                TempData["InfoMessage"] = "Profilinizde bir deðiþiklik yapýlmadý.";
+            }
+            
             return RedirectToAction("Settings");
         }
 
