@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="~/SupportTicketApp.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        ViewData["Title"] = "Profil Ayarları";
+        // var profilePhotoBase64 = (string)TempData["ProfilePhotoBase64"]; 
+        // var profilePhotoBase64 = TempData["ProfilePhotoBase64"] as string; 
+
+        var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string; 
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -31,12 +38,12 @@
                             UserType? userType = userTypeClaim != null ? Enum.Parse<UserType>(userTypeClaim.Value) : null;
                             // Profil fotoğrafı
 
-                            var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string;
-
+@*                             var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string;
+ *@
                             <li class="nav-item ms-auto">
                                 <div class="d-flex align-items-center">
                                     <a asp-area="" asp-controller="Home" asp-action="Settings" class="d-flex align-items-center">
-                                        @if (profilePhotoBase64 != null)
+                                        @if (!string.IsNullOrEmpty(profilePhotoBase64))
                                         {
                                             <img src="data:image/png;base64,@profilePhotoBase64" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
                                         }
@@ -44,6 +51,23 @@
                                         {
                                             <img src="~/images/default.png" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
                                         }
+                                        @* @if (TempData["ProfilePhotoBase64"] != null)
+                                        {
+                                            <img src="data:image/png;base64,@TempData["ProfilePhotoBase64"]" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/default.png" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        }
+ *@
+                                        @* @if (profilePhotoBase64 != null)
+                                        {
+                                            <img src="data:image/png;base64,@profilePhotoBase64" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/default.png" alt="Profil Fotoğrafı" class="rounded-circle" width="40" height="40" />
+                                        } *@
                                     </a>
                                 </div>
                             </li>
@@ -68,9 +92,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="UnassignedTickets">Atanmamış Biletler</a>
                                 </li>
-                                @* <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li> *@
+                                
                             }
                             else if (userType == UserType.Calisan)
                             {
@@ -80,18 +102,14 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="AssignedTickets">Çalışana Atanmış Biletler</a>
                                 </li>
-                                @* <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li> *@
+                                
                             }
                             else if (userType == UserType.SonKullanici)
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Destek Biletleri Listesi</a>
                                 </li>
-                                @* <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Settings">Ayarlar</a>
-                                </li> *@
+                                
                             }
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
@@ -117,6 +135,13 @@
             &copy; 2024 - SupportTicketApp
         </div>
     </footer>
+    @* <script>
+        var profilePhotoBase64 = '@profilePhotoBase64';
+        if (profilePhotoBase64) {
+            var profileImage = document.querySelector('img[alt="Profil Fotoğrafı"]');
+            profileImage.src = 'data:image/png;base64,' + profilePhotoBase64;
+        }
+    </script> *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

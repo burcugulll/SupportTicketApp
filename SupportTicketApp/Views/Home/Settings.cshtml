@@ -22,12 +22,7 @@
                     @TempData["InfoMessage"]
                 </div>
             }
-            @* @if (!string.IsNullOrEmpty(ViewBag.Message as string))
-            {
-                <div class="alert alert-info">
-                    @ViewBag.Message
-                </div>
-            } *@
+            
 
             <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
                 <div class="row">

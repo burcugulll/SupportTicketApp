@@ -70,7 +70,8 @@ namespace SupportTicketApp.Controllers
                         var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim(ClaimTypes.Role, user.UserType.ToString()) 
+                        new Claim(ClaimTypes.Role, user.UserType.ToString()) ,
+
 
                     };
 

@@ -27,10 +27,18 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> Settings()
         {
             var userName = User.Identity.Name;
-            var user = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName); // SingleOrDefault kullanýmý
+            var user = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName); 
             if (user == null)
             {
                 return NotFound("Kullanýcý bulunamadý.");
+            }
+            if (user.ProfilePhoto != null && user.ProfilePhoto.Length > 0)
+            {
+                ViewBag.ProfilePhotoBase64 = Convert.ToBase64String(user.ProfilePhoto);
+            }
+            else
+            {
+                ViewBag.ProfilePhotoBase64 = null;
             }
             return View(user);
         }
@@ -39,7 +47,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> UpdateProfile(string Name, string Email, string Password, IFormFile ProfilePhoto)
         {
             var userName = User.Identity.Name;
-            var user = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName); // SingleOrDefault kullanýmý
+            var user = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName); 
             if (user == null)
             {
                 return NotFound("Kullanýcý bulunamadý.");
@@ -77,21 +85,18 @@ namespace SupportTicketApp.Controllers
 
                 }
             }
-            //else if (user.ProfilePhoto == null || user.ProfilePhoto.Length == 0)
-            //{
-            //    // Eðer kullanýcý hiç fotoðraf yüklememiþse varsayýlan avatarý ayarla
-            //    var defaultAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/default.png");
-            //    if (System.IO.File.Exists(defaultAvatarPath))
-            //    {
-            //        user.ProfilePhoto = await System.IO.File.ReadAllBytesAsync(defaultAvatarPath);
-            //    }
-            //}
 
             if (changesMade)
             {
                 _context.UserTabs.Update(user);
                 await _context.SaveChangesAsync();
+
+
                 TempData["SuccessMessage"] = "Profil baþarýyla güncellendi.";
+                var base64ProfilePhoto = Convert.ToBase64String(user.ProfilePhoto);
+                //ViewBag.ProfilePhotoBase64 = base64ProfilePhoto;
+                TempData["ProfilePhotoBase64"] = base64ProfilePhoto;
+
             }
             else
             {
