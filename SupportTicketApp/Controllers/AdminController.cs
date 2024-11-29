@@ -61,7 +61,7 @@ namespace SupportTicketApp.Controllers
                 CreatedDate = DateTime.Now,
                 Status = true,
                 
-                ProfilePhoto = new byte[0] // Boş bir fotoğraf yerine, kullanıcıya profil fotoğrafı atanmayacak.
+                ProfilePhoto = new byte[0] 
 
 
             };
@@ -94,7 +94,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> OngoingTickets()
         {
             var tickets = await _context.TicketInfoTabs
-                .Where(t => t.Status == true && t.IsCompleted==false) 
+        .Where(t => t.IsCompleted == false) 
                 .Include(t => t.UserTab)
                 .Include(t => t.TicketImage)
                 .Include(t => t.Comments)
@@ -108,7 +108,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> UnassignedTickets()
         {
             var tickets = await _context.TicketInfoTabs
-                .Where(t => t.UserTab == null) 
+        .Where(t => t.UserTab == null && t.IsCompleted == false) 
                 .Include(t => t.UserTab)
                 .Include(t => t.TicketImage)
                 .Include(t => t.Comments)
@@ -308,7 +308,7 @@ namespace SupportTicketApp.Controllers
                 var document = new iText.Layout.Document(pdf);
                 var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "arial.ttf");
 
-                var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H); // 'true' burada fontu embed edecektir.
+                var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H); 
                 document.Add(new Paragraph($"Bilet ID: {ticket.TicketId}").SetFont(font));
                 document.Add(new Paragraph($"Başlık: {ticket.Title}").SetFont(font));
                 document.Add(new Paragraph($"Açıklama: {ticket.Description}").SetFont(font));
