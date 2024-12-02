@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using SupportTicketApp.Controllers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<SupportTicketDbContext>();
+        //var signInManager = services.GetRequiredService<SignInManager<IdentityUser>>();
+
         var accountController = new AccountController(context);
+
         var result = await accountController.CreateAdminUser() as JsonResult;  
 
     }

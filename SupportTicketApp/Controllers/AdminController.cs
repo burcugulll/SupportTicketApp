@@ -246,8 +246,20 @@ namespace SupportTicketApp.Controllers
                 return RedirectToAction("AllTickets");
             }
 
+            /*var tickets = await _context.TicketInfoTabs
+                .Where(t => ticketIds.Any(id => id == t.TicketId))
+                .ToListAsync();*/
+
+            var ticketIdParams = ticketIds.Select((id, index) => new { Id = id, ParamName = $"@p{index}" }).ToList();
+            
+            var parameterizedQuery = $"SELECT * FROM TicketInfoTabs WHERE TicketId IN ({string.Join(", ", ticketIdParams.Select(p => p.ParamName))})";
+
+            var sqlParameters = ticketIdParams
+                .Select(p => new Microsoft.Data.SqlClient.SqlParameter(p.ParamName, p.Id))
+                .ToArray();
+
             var tickets = await _context.TicketInfoTabs
-                .Where(t => ticketIds.Contains(t.TicketId))
+                .FromSqlRaw(parameterizedQuery, sqlParameters)
                 .ToListAsync();
 
             if (tickets == null || tickets.Count == 0)
@@ -261,7 +273,7 @@ namespace SupportTicketApp.Controllers
                 case "complete":
                     foreach (var ticket in tickets)
                     {
-
+                        
                         ticket.IsCompleted = true;
                         ticket.ModifiedDate = DateTime.Now;
                     }
@@ -377,31 +389,32 @@ namespace SupportTicketApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignUsersToTicket(int ticketId, int[] userIds)
         {
-            // Bilet verisini alın
             var ticket = await _context.TicketInfoTabs
-                .Include(t => t.AssignedPerson) // Atanmış personel bilgilerini de dahil et
+                .Include(t => t.AssignedPerson) 
                 .FirstOrDefaultAsync(t => t.TicketId == ticketId);
 
             if (ticket == null)
             {
-                // Bilet bulunamadı
                 return NotFound();
             }
 
-            // Kullanıcıları bilet ile ilişkilendir
+            if(userIds.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Personel Atanamadı, Tekrar Deneyin!";
+                return RedirectToAction("TicketDetails", new { ticketId });
+            }
+
             foreach (var userId in userIds)
             {
                 var user = await _context.Users.FindAsync(userId);
                 if (user != null && !ticket.AssignedPerson.Any(a => a.UserId == userId))
                 {
-                    ticket.AssignedPerson.Add(user); // Kullanıcıyı assignedPerson koleksiyonuna ekle
+                    ticket.AssignedPerson.Add(user); 
                 }
             }
 
-            // Değişiklikleri kaydedin
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Personel başarıyla atandı!";
-
 
             return RedirectToAction("TicketDetails", new { ticketId });
         }

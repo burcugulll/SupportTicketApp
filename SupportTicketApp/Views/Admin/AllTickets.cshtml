@@ -34,7 +34,7 @@
                     <td>@ticket.Title</td>
                     <td>@(ticket.Status ? "Aktif" : "Pasif")</td>
                     <td>@ticket.Urgency</td>
-                    <td>@ticket.UserTab?.Name ?? "Atanmamış"</td>
+                    <td>@ticket.UserTab?.UserName ?? "Atanmamış"</td>
                     <td>@ticket.CreatedDate.ToShortDateString()</td>
                     <td>
                         @if (ticket.TicketImage != null)

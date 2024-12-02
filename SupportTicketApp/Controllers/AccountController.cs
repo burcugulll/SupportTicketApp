@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace SupportTicketApp.Controllers
@@ -16,16 +17,22 @@ namespace SupportTicketApp.Controllers
     public class AccountController : Controller
     {
         private readonly SupportTicketDbContext _context;
+        //private readonly SignInManager<IdentityUser> _signInManager;
 
-        public AccountController(SupportTicketDbContext context)
+        public AccountController(SupportTicketDbContext context ) //SignInManager<IdentityUser> signInManager
         {
             _context = context;
+            //_signInManager = signInManager;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            /*if (_signInManager.IsSignedIn(User)) // Kullanıcı giriş yapmış mı?
+            {
+                return RedirectToAction("Index", "Home"); // Anasayfaya yönlendir
+            }*/
+            return View(); // Giriş yapmamışsa Login sayfasını göster
         }
 
         [HttpPost]
@@ -148,6 +155,10 @@ namespace SupportTicketApp.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            /*if (_signInManager.IsSignedIn(User)) // Kullanıcı giriş yapmış mı?
+            {
+                return RedirectToAction("Index", "Home"); // Anasayfaya yönlendir
+            }*/
             return View();
         }
 
