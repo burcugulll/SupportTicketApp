@@ -26,13 +26,16 @@ namespace SupportTicketApp.Models
 
         public bool Status { get; set; } = true;
         public bool IsCompleted { get; set; }
+        public int UserId { get; set; } // FK to User
+        public UserTab UserTab { get; set; } // Bire çok: Her bilet bir kullanıcıya ait
 
-        public int UserId { get; set; }
-        public virtual UserTab? UserTab { get; set; }
+        public ICollection<TicketImage> TicketImages { get; set; }
+        public ICollection<TicketInfoCommentTab> TicketInfoCommentTabs { get; set; }
 
-        public virtual TicketImage? TicketImage { get; set; } // İlişkilendirilen resim
-        public virtual ICollection<TicketInfoCommentTab>? Comments { get; set; } // Bilete ait yorumlar
-        public virtual ICollection<UserTab> AssignedPerson { get; set; } = new List<UserTab>(); // Personel koleksiyonu
+        public ICollection<TicketAssignment> TicketAssignments { get; set; } // Çoka çok: Birden çok personele atanabilir
+                                                                             
 
+
+        
     }
 }

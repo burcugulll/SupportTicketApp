@@ -80,11 +80,19 @@ namespace SupportTicketApp.Controllers
         // Tüm Biletler
         public async Task<IActionResult> AllTickets()
         {
+            List<TicketInfoTab> ticketInfos = await _context.TicketInfoTabs.ToListAsync();
+
+            foreach (var ticket in ticketInfos)
+            {
+                ticket.UserTab = await _context.UserTabs.FirstOrDefaultAsync(x => x.UserId == ticket.UserId);
+            }
+
+
             var tickets = await _context.TicketInfoTabs
                 .Include(t => t.UserTab)
-                .Include(t => t.TicketImage)
-                .Include(t => t.Comments)
-                    .ThenInclude(c => c.CommentImages)
+                .Include(t => t.TicketImages)
+                .Include(t => t.TicketInfoCommentTabs)
+                    .ThenInclude(c => c.TicketCommentImages)
                 .ToListAsync();
 
             return View(tickets); 
@@ -96,9 +104,9 @@ namespace SupportTicketApp.Controllers
             var tickets = await _context.TicketInfoTabs
         .Where(t => t.IsCompleted == false) 
                 .Include(t => t.UserTab)
-                .Include(t => t.TicketImage)
-                .Include(t => t.Comments)
-                    .ThenInclude(c => c.CommentImages)
+                .Include(t => t.TicketImages)
+                .Include(t => t.TicketInfoCommentTabs)
+                    .ThenInclude(c => c.TicketCommentImages)
                 .ToListAsync();
 
             return View(tickets); 
@@ -110,9 +118,9 @@ namespace SupportTicketApp.Controllers
             var tickets = await _context.TicketInfoTabs
         .Where(t => t.UserTab == null && t.IsCompleted == false) 
                 .Include(t => t.UserTab)
-                .Include(t => t.TicketImage)
-                .Include(t => t.Comments)
-                    .ThenInclude(c => c.CommentImages)
+                .Include(t => t.TicketImages)
+                .Include(t => t.TicketInfoCommentTabs)
+                    .ThenInclude(c => c.TicketCommentImages)
                 .ToListAsync();
 
             return View(tickets); 
@@ -129,8 +137,8 @@ namespace SupportTicketApp.Controllers
         public IActionResult TicketDetails(int ticketId)
         {
             var ticket = _context.TicketInfoTabs
-                .Include(t => t.AssignedPerson)
-                .Include(t => t.Comments)      // Comments ilişkisini dahil et
+                .Include(t => t.TicketAssignments)
+                .Include(t => t.TicketInfoCommentTabs)      
                 .FirstOrDefault(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -139,10 +147,10 @@ namespace SupportTicketApp.Controllers
             }
             ViewBag.Users = _context.UserTabs
                 .Where(u => u.UserType == UserType.Calisan)
-       .Select(u => new { u.UserId, u.Name }) // Gerekli alanları seç
+       .Select(u => new { u.UserId, u.Name }) 
        .ToList();
 
-            return View(ticket); // Bu durumda view adı TicketDetails.cshtml olacaktır
+            return View(ticket); 
         }
 
 
@@ -285,7 +293,7 @@ namespace SupportTicketApp.Controllers
                     {
 
                         ticket.Status = false; // Pasif
-                        ticket.IsCompleted = false;
+                        ticket.IsCompleted = true;
                         ticket.DeletedDate = DateTime.Now;
                     }
                     TempData["SuccessMessage"] = $"Seçili {tickets.Count} bilet başarıyla silindi.";
@@ -306,8 +314,8 @@ namespace SupportTicketApp.Controllers
         public IActionResult ExportToPdf(int ticketId)
         {
             var ticket = _context.TicketInfoTabs
-                .Include(t => t.Comments)
-                .ThenInclude(c => c.CommentImages)
+                .Include(t => t.TicketInfoCommentTabs)
+                .ThenInclude(c => c.TicketCommentImages)
                 .FirstOrDefault(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -329,10 +337,10 @@ namespace SupportTicketApp.Controllers
                 document.Add(new Paragraph($"Oluşturma Tarihi: {ticket.CreatedDate.ToString("dd.MM.yyyy")}").SetFont(font));
                
 
-                if (ticket.Comments != null && ticket.Comments.Any())
+                if (ticket.TicketInfoCommentTabs != null && ticket.TicketInfoCommentTabs.Any())
                 {
                     document.Add(new Paragraph("Yorumlar:").SetFont(font));
-                    foreach (var comment in ticket.Comments)
+                    foreach (var comment in ticket.TicketInfoCommentTabs)
                     {
                         document.Add(new Paragraph($"- {comment.Title}: {comment.Description}").SetFont(font));
                     }
@@ -390,7 +398,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> AssignUsersToTicket(int ticketId, int[] userIds)
         {
             var ticket = await _context.TicketInfoTabs
-                .Include(t => t.AssignedPerson) 
+                .Include(t => t.TicketAssignments)
                 .FirstOrDefaultAsync(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -406,12 +414,20 @@ namespace SupportTicketApp.Controllers
 
             foreach (var userId in userIds)
             {
-                var user = await _context.Users.FindAsync(userId);
-                if (user != null && !ticket.AssignedPerson.Any(a => a.UserId == userId))
+                var user = await _context.UserTabs.FindAsync(userId);
+                if (user != null && !ticket.TicketAssignments.Any(a => a.UserId == userId))
                 {
-                    ticket.AssignedPerson.Add(user); 
+                    var ticketAssignment = new TicketAssignment
+                    {
+                        TicketId = ticket.TicketId,  // İlgili biletin TicketId'sini ayarlayın
+                        UserId = user.UserId,        // Kullanıcının UserId'sini ayarlayın
+                                                     // Diğer gerekli alanları da buraya ekleyebilirsiniz (varsa)
+                    };
+
+                    ticket.TicketAssignments.Add(ticketAssignment);  // TicketAssignment nesnesini koleksiyona ekleyin
                 }
             }
+
 
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Personel başarıyla atandı!";

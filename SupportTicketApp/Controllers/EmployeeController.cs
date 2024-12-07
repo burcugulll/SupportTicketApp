@@ -156,8 +156,8 @@ namespace SupportTicketApp.Controllers
 
             // Ticketi ve atanmış kişiyi kontrol et
             var ticket = await _context.TicketInfoTabs
-                .Include(t => t.AssignedPerson)
-                .FirstOrDefaultAsync(t => t.TicketId == id && t.AssignedPerson.Any(a => a.UserId == userId));
+                .Include(t => t.TicketAssignments)
+                .FirstOrDefaultAsync(t => t.TicketId == id && t.TicketAssignments.Any(a => a.UserId == userId));
 
             if (ticket == null)
             {

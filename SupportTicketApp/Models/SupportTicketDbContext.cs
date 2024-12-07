@@ -14,56 +14,57 @@ namespace SupportTicketApp.Models
         public DbSet<TicketInfoCommentTab> TicketInfoCommentTabs { get; set; }
         public DbSet<TicketImage> TicketImages { get; set; }
         public DbSet<TicketCommentImage> TicketCommentImages { get; set; }
-        public DbSet<CommentImageJunction> CommentImages { get; set; }
-        public DbSet<UserTab> Users { get; set; }  
+        public DbSet<TicketAssignment> TicketAssignments { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-       //     modelBuilder.Entity<TicketInfoTab>()
-       //.HasMany(t => t.AssignedPerson)  // TicketInfoTab ile UserTab arasındaki ilişki
-       //.WithMany(u => u.AssignedTickets)  // UserTab ile TicketInfoTab arasındaki ilişki
-       //.UsingEntity<Dictionary<string, object>>( // Ara tabloyu manuel oluşturuyoruz
-       //    "TicketUser",  // Ara tablo adı
-       //    j => j.HasOne<UserTab>().WithMany().HasForeignKey("UserId"), // UserTab'e bağlayan FK
-       //    j => j.HasOne<TicketInfoTab>().WithMany().HasForeignKey("TicketId") // TicketInfoTab'e bağlayan FK
-       //);
 
-            // TicketInfoTab ile TicketImage ilişkisi
+            // UserTab ile TicketInfoTab arasındaki bire çok ilişki
             modelBuilder.Entity<TicketInfoTab>()
-                .HasOne(t => t.TicketImage)
-                .WithMany()
-                .HasForeignKey(t => t.TicketImageId)
-                .OnDelete(DeleteBehavior.Restrict); // İlişki silindiğinde TicketImage silinmesin
+                .HasOne(t => t.UserTab)
+                .WithMany(u => u.TicketInfoTabs)
+                .HasForeignKey(t => t.UserId);
 
-            // TicketInfoCommentTab ile TicketInfoTab ilişkisi
+            // TicketInfoTab ile TicketInfoCommentTab arasındaki bire çok ilişki
             modelBuilder.Entity<TicketInfoCommentTab>()
-                .HasOne(c => c.Ticket)
-                .WithMany(t => t.Comments)
-                .HasForeignKey(c => c.TicketId)
-                .OnDelete(DeleteBehavior.Cascade); // Ticket silindiğinde ilgili yorumlar silinsin
+                .HasOne(tc => tc.TicketInfoTab)
+                .WithMany(t => t.TicketInfoCommentTabs)
+                .HasForeignKey(tc => tc.TicketId);
 
-            // TicketInfoCommentTab ile TicketCommentImage ilişkisi
+            // TicketInfoTab ile TicketImage arasındaki bire çok ilişkiyi tanımlıyoruz
+            modelBuilder.Entity<TicketInfoTab>()
+                .HasMany(t => t.TicketImages) // TicketInfoTab'ın birden fazla resmi olabilir
+                .WithOne(ti => ti.TicketInfoTab) // Ters ilişkiyi kuruyoruz: Her TicketImage, bir TicketInfoTab'a ait olacak
+                .HasForeignKey(ti => ti.TicketId); // TicketImage tablosunda TicketId, TicketInfoTab'ın foreign key'i olacaktır.
+
+            // TicketInfoCommentTab ile TicketCommentImage arasındaki bire çok ilişkiyi tanımlıyoruz
             modelBuilder.Entity<TicketInfoCommentTab>()
-                .HasOne(c => c.TicketCommentImage)
-                .WithMany()
-                .HasForeignKey(c => c.TicketCommentImageId)
-                .OnDelete(DeleteBehavior.Restrict); // İlişki silindiğinde TicketCommentImage silinmesin
+                .HasMany(t => t.TicketCommentImages) // TicketInfoCommentTab'ın birden fazla resmi olabilir
+                .WithOne(i => i.TicketInfoCommentTab) // TicketCommentImage'in bir TicketInfoCommentTab'ı olacak (ters ilişki)
+                .HasForeignKey(i => i.CommentId); // TicketCommentImage tablosunda CommentId, TicketInfoCommentTab'ın foreign key'i olacaktır
 
-            // CommentImageJunction ile TicketInfoCommentTab ilişkisi
-            modelBuilder.Entity<CommentImageJunction>()
-                .HasOne(j => j.TicketComment)
-                .WithMany(c => c.CommentImages)
-                .HasForeignKey(j => j.CommentId)
-                .OnDelete(DeleteBehavior.Cascade); // Yorum silindiğinde ilgili resimler silinsin
+            // UserTab ile UserLogTab arasındaki bire çok ilişki
+            modelBuilder.Entity<UserLogTab>()
+                .HasOne(ul => ul.UserTab)
+                .WithMany(u => u.UserLogTabs)
+                .HasForeignKey(ul => ul.UserId);
 
-            // CommentImageJunction ile TicketCommentImage ilişkisi
-            modelBuilder.Entity<CommentImageJunction>()
-                .HasOne(j => j.TicketCommentImage)
-                .WithMany()
-                .HasForeignKey(j => j.ImageId)
-                .OnDelete(DeleteBehavior.Restrict); // İlişki silindiğinde TicketCommentImage silinmesin
+            // TicketAssignment (ara tablo) ile UserTab ve TicketInfoTab arasındaki çoka çok ilişki
+            modelBuilder.Entity<TicketAssignment>()
+                .HasKey(ta => new { ta.TicketId, ta.UserId });
+
+            modelBuilder.Entity<TicketAssignment>()
+                .HasOne(ta => ta.TicketInfoTab)
+                .WithMany(t => t.TicketAssignments)
+                .HasForeignKey(ta => ta.TicketId);
+
+            modelBuilder.Entity<TicketAssignment>()
+                .HasOne(ta => ta.UserTab)
+                .WithMany(u => u.TicketAssignments)
+                .HasForeignKey(ta => ta.UserId);
 
 
         }

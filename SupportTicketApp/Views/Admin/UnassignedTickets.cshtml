@@ -25,9 +25,9 @@
                 <td>@ticket.UserTab?.UserName ?? "Atanmamış"</td>
                 <td>@ticket.CreatedDate.ToShortDateString()</td>
                 <td>
-                    @if (ticket.TicketImage != null)
+                    @if (ticket.TicketImages != null && ticket.TicketImages.Any())
                     {
-                        <img src="@ticket.TicketImage.ImageUrl" alt="Resim" style="width: 50px;" />
+                        <img src="@ticket.TicketImages.FirstOrDefault()?.ImageUrl" alt="Resim" style="width: 50px;" />
                     }
                     else
                     {

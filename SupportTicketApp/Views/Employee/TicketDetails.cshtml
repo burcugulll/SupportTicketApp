@@ -40,10 +40,10 @@
     <p><strong>Oluşturulma Tarihi:</strong> @Model.CreatedDate.ToString("dd/MM/yyyy")</p>
 
     <h3>Yorumlar</h3>
-    @if (Model.Comments != null && Model.Comments.Any())
+    @if (Model.TicketInfoCommentTabs != null && Model.TicketInfoCommentTabs.Any())
     {
         <ul>
-            @foreach (var comment in Model.Comments)
+            @foreach (var comment in Model.TicketInfoCommentTabs)
             {
                 <li>
                     <strong>@comment.Title</strong>: @comment.Description

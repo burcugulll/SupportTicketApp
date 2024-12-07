@@ -117,7 +117,7 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
 
-            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
+            if (ticket.TicketAssignments != null && ticket.TicketAssignments.Any())
             {
                 return Forbid("Atanmış bir bilet silinemez.");
             }
@@ -143,7 +143,7 @@ namespace SupportTicketApp.Controllers
                 return NotFound("Bilet bulunamadı.");
             }
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
-            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
+            if (ticket.TicketAssignments != null && ticket.TicketAssignments.Any())
             {
                 if (ticket.UserTab.UserName != currentUserName)
                 {
@@ -172,7 +172,7 @@ namespace SupportTicketApp.Controllers
 
             var currentUserName = User.FindFirstValue(ClaimTypes.Name);
 
-            if (ticket.AssignedPerson != null && ticket.AssignedPerson.Any())
+            if (ticket.TicketAssignments != null && ticket.TicketAssignments.Any())
             {
                 if (ticket.UserTab != null && ticket.UserTab.UserName != currentUserName)
                 {
@@ -180,7 +180,7 @@ namespace SupportTicketApp.Controllers
                 }
             }
 
-            if ((ticket.UserTab != null && ticket.UserTab.UserName == currentUserName) || !ticket.AssignedPerson.Any())
+            if ((ticket.UserTab != null && ticket.UserTab.UserName == currentUserName) || !ticket.TicketAssignments.Any())
 
             {
                 // Bilet güncelleme
@@ -208,7 +208,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> AddComment(int ticketId, string comment)
         {
             var ticket = await dbContext.TicketInfoTabs
-                .Include(t => t.Comments)
+                .Include(t => t.TicketInfoCommentTabs)
                 .FirstOrDefaultAsync(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -223,7 +223,7 @@ namespace SupportTicketApp.Controllers
                 CreatedDate = DateTime.Now
             };
 
-            ticket.Comments.Add(newComment);
+            ticket.TicketInfoCommentTabs.Add(newComment);
             await dbContext.SaveChangesAsync();
 
             return RedirectToAction("Details", new { id = ticketId });

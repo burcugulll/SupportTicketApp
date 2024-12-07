@@ -9,11 +9,15 @@ namespace SupportTicketApp.Models
 
         [Required, MaxLength(50)]
         public string UserName {  get; set; }
+        public int UserId { get; set; }
+
         public DateTime LogTime { get; set; } = DateTime.Now;
 
         [MaxLength(50)]
         public string IPAdress { get; set; }
 
         public string Log {  get; set; }
+        public UserTab UserTab { get; set; }
+
     }
 }

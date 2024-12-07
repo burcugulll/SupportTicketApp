@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupportTicketApp.Models;
 
@@ -11,9 +12,11 @@ using SupportTicketApp.Models;
 namespace SupportTicketApp.Migrations
 {
     [DbContext(typeof(SupportTicketDbContext))]
-    partial class SupportTicketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241202130102_AddNewModels")]
+    partial class AddNewModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,11 +51,11 @@ namespace SupportTicketApp.Migrations
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketCommentImage", b =>
                 {
-                    b.Property<int>("CommentImageId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentImageId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CommentId")
                         .HasColumnType("int");
@@ -60,22 +63,18 @@ namespace SupportTicketApp.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int?>("TicketInfoTabTicketId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
-
-                    b.HasKey("CommentImageId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CommentId");
+
+                    b.HasIndex("TicketInfoTabTicketId");
 
                     b.ToTable("TicketCommentImages");
                 });
@@ -88,21 +87,9 @@ namespace SupportTicketApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketImageId"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
 
                     b.Property<int>("TicketId")
                         .HasColumnType("int");
@@ -161,6 +148,9 @@ namespace SupportTicketApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketId"));
 
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -191,12 +181,9 @@ namespace SupportTicketApp.Migrations
                     b.Property<int>("Urgency")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("TicketId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CreatedByUserId");
 
                     b.ToTable("TicketInfoTabs");
                 });
@@ -325,6 +312,10 @@ namespace SupportTicketApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", null)
+                        .WithMany("TicketCommentImages")
+                        .HasForeignKey("TicketInfoTabTicketId");
+
                     b.Navigation("TicketInfoCommentTab");
                 });
 
@@ -352,13 +343,13 @@ namespace SupportTicketApp.Migrations
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
                 {
-                    b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
+                    b.HasOne("SupportTicketApp.Models.UserTab", "CreatedByUser")
                         .WithMany("TicketInfoTabs")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserTab");
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.UserLogTab", b =>
@@ -380,6 +371,8 @@ namespace SupportTicketApp.Migrations
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
                 {
                     b.Navigation("TicketAssignments");
+
+                    b.Navigation("TicketCommentImages");
 
                     b.Navigation("TicketImages");
 

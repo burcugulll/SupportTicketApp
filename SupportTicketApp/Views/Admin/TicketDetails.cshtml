@@ -49,9 +49,9 @@
     <!-- Yorumlar Bölümü -->
     <div class="comments-section">
         <h3>Yorumlar</h3>
-        @if (Model.Comments != null && Model.Comments.Any())
+        @if (Model.TicketInfoCommentTabs != null && Model.TicketInfoCommentTabs.Any())
         {
-            foreach (var comment in Model.Comments)
+            foreach (var comment in Model.TicketInfoCommentTabs)
             {
                 <div class="comment">
                     <strong>@comment.Title</strong>
@@ -106,17 +106,11 @@
     </div>
     <!-- İşlemler ve Butonlar -->
     <div class="btn-group mt-4 d-flex justify-content-center" role="group">
-        <a asp-controller="Admin" asp-action="AllTickets" class="btn btn-primary btn-lg mx-2">Tüm Biletler</a>
 
-        <form asp-action="DeleteTicket" method="post" style="display:inline;">
-            <input type="hidden" name="id" value="@Model.TicketId" />
-            <button type="submit" class="btn btn-danger btn-lg mx-2">Bileti Sil</button>
-        </form>
+        <a asp-action="DeleteTicket" asp-route-ticketId="@Model.TicketId" class="btn btn-danger">Bileti Sil</a>
 
-        <form asp-action="UpdateTicketStatus" method="post" style="display:inline;">
-            <input type="hidden" name="id" value="@Model.TicketId" />
-            <button type="submit" class="btn btn-warning btn-lg mx-2">Durumu Güncelle</button>
-        </form>
+        <a asp-action="CompleteTicket" asp-route-ticketId="@Model.TicketId" class="btn btn-primary">Durumu Güncelle</a>
+
         <a asp-action="ExportToPdf" asp-route-ticketId="@Model.TicketId" class="btn btn-secondary">PDF İndir</a>
         @* <form asp-action="AssignUsersToTicket" method="post">
             <input type="hidden" name="ticketId" value="@Model.TicketId" />

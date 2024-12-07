@@ -5,19 +5,18 @@ namespace SupportTicketApp.Models
     public class TicketCommentImage
     {
         [Key]
-        public int ImageId { get; set; }
-
-        public string ImageUrl { get; set; } 
-
+        public int CommentImageId { get; set; }
+        public string ImagePath { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? ModifiedDate { get; set; }
 
         public DateTime? DeletedDate { get; set; }
-
         public bool Status { get; set; } = true;
+        public int CommentId { get; set; }  // Bu satır eklendi
 
-        // İlişkilendirilen TicketInfoCommentTab
-        public virtual TicketInfoCommentTab Comment { get; set; }
+
+        // Navigation properties
+        public TicketInfoCommentTab TicketInfoCommentTab { get; set; }
     }
 }

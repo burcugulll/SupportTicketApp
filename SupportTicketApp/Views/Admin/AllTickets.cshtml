@@ -34,8 +34,9 @@
                     <td>@ticket.Title</td>
                     <td>@(ticket.Status ? "Aktif" : "Pasif")</td>
                     <td>@ticket.Urgency</td>
-                    <td>@ticket.UserTab?.UserName ?? "Atanmamış"</td>
-                    <td>@ticket.CreatedDate.ToShortDateString()</td>
+                    <td>@ticket.UserTab.Name</td>
+@*                     <td>@ticket.UserTab?.UserName ?? "Atanmamış"</td>
+ *@                    <td>@ticket.CreatedDate.ToShortDateString()</td>
                     <td>
                         @if (ticket.TicketImage != null)
                         {
@@ -59,13 +60,8 @@
                     <td>
                         <a asp-controller="Admin" asp-action="TicketDetails" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
                         <a asp-controller="Admin" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
-                        <a asp-controller="Admin" asp-action="DeleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-danger">Bilet Sil</a>
-                        <form asp-action="CompleteTicket" method="post" style="display:inline;">
-                            <input type="hidden" name="ticketId" value="@ticket.TicketId" />
-                            <button type="submit" class="btn btn-success">Tamamlandı</button>
-                        </form>
-@*                         <a asp-controller="Admin" asp-action="CompleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">Tamamlandı</a>
- *@                    </td>
+                        
+                    </td>
                 </tr>
             }
         </tbody>
@@ -73,13 +69,9 @@
 
     <div class="mt-3">
         <button type="submit" name="action" value="complete" class="btn btn-success">Tamamlandı</button>
-@*         <button type="submit" name="action" value="delete" class="btn btn-danger">Sil</button>
- *@    </div>
+        <button type="submit" name="action" value="delete" class="btn btn-danger">Sil</button>
+    </div>
 
-     @* <form asp-action="MarkTicketAsCompleted" method="post">
-        <input type="hidden" name="ticketId" value="@ticket.TicketId" />
-        <button type="submit" class="btn btn-success">Tamamlandı</button>
-    </form>  *@
 </form>
 
 <script>
