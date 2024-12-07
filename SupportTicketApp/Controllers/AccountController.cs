@@ -68,6 +68,7 @@ namespace SupportTicketApp.Controllers
                         {
                             UserName = user.UserName,
                             LogTime = DateTime.Now,
+                            UserId = user.UserId,
                             IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
                             Log = "Başarılı giriş"
                         };
@@ -115,6 +116,7 @@ namespace SupportTicketApp.Controllers
                         {
                             UserName = user.UserName,
                             LogTime = DateTime.Now,
+                            UserId = user.UserId,
                             IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
                             Log = "Başarısız giriş"
                         };

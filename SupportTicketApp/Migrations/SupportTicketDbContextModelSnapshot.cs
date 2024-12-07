@@ -303,13 +303,13 @@ namespace SupportTicketApp.Migrations
                     b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
                         .WithMany("TicketAssignments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
                         .WithMany("TicketAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("TicketInfoTab");

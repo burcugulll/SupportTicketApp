@@ -12,8 +12,8 @@ using SupportTicketApp.Models;
 namespace SupportTicketApp.Migrations
 {
     [DbContext(typeof(SupportTicketDbContext))]
-    [Migration("20241121103826_AddIsCompletedToTicketInfoTab")]
-    partial class AddIsCompletedToTicketInfoTab
+    [Migration("20241207191315_NewDB")]
+    partial class NewDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,36 +25,40 @@ namespace SupportTicketApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SupportTicketApp.Models.CommentImageJunction", b =>
+            modelBuilder.Entity("SupportTicketApp.Models.TicketAssignment", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("TicketId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommentId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ImageId")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("AssignedDate")
+                        .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
-                    b.HasIndex("CommentId");
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
-                    b.HasIndex("ImageId");
+                    b.HasKey("TicketId", "UserId");
 
-                    b.ToTable("CommentImages");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TicketAssignments");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketCommentImage", b =>
                 {
-                    b.Property<int>("ImageId")
+                    b.Property<int>("CommentImageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentImageId"));
+
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -62,7 +66,7 @@ namespace SupportTicketApp.Migrations
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -72,18 +76,20 @@ namespace SupportTicketApp.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("ImageId");
+                    b.HasKey("CommentImageId");
+
+                    b.HasIndex("CommentId");
 
                     b.ToTable("TicketCommentImages");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketImage", b =>
                 {
-                    b.Property<int>("ImageId")
+                    b.Property<int>("TicketImageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketImageId"));
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -101,7 +107,12 @@ namespace SupportTicketApp.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("ImageId");
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TicketImageId");
+
+                    b.HasIndex("TicketId");
 
                     b.ToTable("TicketImages");
                 });
@@ -130,12 +141,6 @@ namespace SupportTicketApp.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("TicketCommentImageId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TicketCommentImageImageId")
-                        .HasColumnType("int");
-
                     b.Property<int>("TicketId")
                         .HasColumnType("int");
 
@@ -145,12 +150,6 @@ namespace SupportTicketApp.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("CommentId");
-
-                    b.HasIndex("TicketCommentImageId");
-
-                    b.HasIndex("TicketCommentImageImageId")
-                        .IsUnique()
-                        .HasFilter("[TicketCommentImageImageId] IS NOT NULL");
 
                     b.HasIndex("TicketId");
 
@@ -187,9 +186,6 @@ namespace SupportTicketApp.Migrations
                     b.Property<int?>("TicketImageId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TicketImageImageId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -201,18 +197,9 @@ namespace SupportTicketApp.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserTabUserId")
-                        .HasColumnType("int");
-
                     b.HasKey("TicketId");
 
-                    b.HasIndex("TicketImageId");
-
-                    b.HasIndex("TicketImageImageId")
-                        .IsUnique()
-                        .HasFilter("[TicketImageImageId] IS NOT NULL");
-
-                    b.HasIndex("UserTabUserId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("TicketInfoTabs");
                 });
@@ -237,12 +224,17 @@ namespace SupportTicketApp.Migrations
                     b.Property<DateTime>("LogTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("LogId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserLogTabs");
                 });
@@ -296,9 +288,6 @@ namespace SupportTicketApp.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("TicketInfoTabTicketId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -309,101 +298,104 @@ namespace SupportTicketApp.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("TicketInfoTabTicketId");
-
-                    b.ToTable("UserTab");
+                    b.ToTable("UserTabs");
                 });
 
-            modelBuilder.Entity("SupportTicketApp.Models.CommentImageJunction", b =>
+            modelBuilder.Entity("SupportTicketApp.Models.TicketAssignment", b =>
                 {
-                    b.HasOne("SupportTicketApp.Models.TicketInfoCommentTab", "TicketComment")
-                        .WithMany("CommentImages")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SupportTicketApp.Models.TicketCommentImage", "TicketCommentImage")
-                        .WithMany()
-                        .HasForeignKey("ImageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("TicketComment");
-
-                    b.Navigation("TicketCommentImage");
-                });
-
-            modelBuilder.Entity("SupportTicketApp.Models.TicketInfoCommentTab", b =>
-                {
-                    b.HasOne("SupportTicketApp.Models.TicketCommentImage", "TicketCommentImage")
-                        .WithMany()
-                        .HasForeignKey("TicketCommentImageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SupportTicketApp.Models.TicketCommentImage", null)
-                        .WithOne("Comment")
-                        .HasForeignKey("SupportTicketApp.Models.TicketInfoCommentTab", "TicketCommentImageImageId");
-
-                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", "Ticket")
-                        .WithMany("Comments")
+                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
+                        .WithMany("TicketAssignments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Ticket");
-
-                    b.Navigation("TicketCommentImage");
-                });
-
-            modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
-                {
-                    b.HasOne("SupportTicketApp.Models.TicketImage", "TicketImage")
-                        .WithMany()
-                        .HasForeignKey("TicketImageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SupportTicketApp.Models.TicketImage", null)
-                        .WithOne("Ticket")
-                        .HasForeignKey("SupportTicketApp.Models.TicketInfoTab", "TicketImageImageId");
 
                     b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
-                        .WithMany()
-                        .HasForeignKey("UserTabUserId");
+                        .WithMany("TicketAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-                    b.Navigation("TicketImage");
+                    b.Navigation("TicketInfoTab");
 
                     b.Navigation("UserTab");
                 });
 
-            modelBuilder.Entity("SupportTicketApp.Models.UserTab", b =>
-                {
-                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", null)
-                        .WithMany("AssignedPerson")
-                        .HasForeignKey("TicketInfoTabTicketId");
-                });
-
             modelBuilder.Entity("SupportTicketApp.Models.TicketCommentImage", b =>
                 {
-                    b.Navigation("Comment")
+                    b.HasOne("SupportTicketApp.Models.TicketInfoCommentTab", "TicketInfoCommentTab")
+                        .WithMany("TicketCommentImages")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TicketInfoCommentTab");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketImage", b =>
                 {
-                    b.Navigation("Ticket")
+                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
+                        .WithMany("TicketImages")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TicketInfoTab");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoCommentTab", b =>
                 {
-                    b.Navigation("CommentImages");
+                    b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
+                        .WithMany("TicketInfoCommentTabs")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TicketInfoTab");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
                 {
-                    b.Navigation("AssignedPerson");
+                    b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
+                        .WithMany("TicketInfoTabs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Comments");
+                    b.Navigation("UserTab");
+                });
+
+            modelBuilder.Entity("SupportTicketApp.Models.UserLogTab", b =>
+                {
+                    b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
+                        .WithMany("UserLogTabs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserTab");
+                });
+
+            modelBuilder.Entity("SupportTicketApp.Models.TicketInfoCommentTab", b =>
+                {
+                    b.Navigation("TicketCommentImages");
+                });
+
+            modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
+                {
+                    b.Navigation("TicketAssignments");
+
+                    b.Navigation("TicketImages");
+
+                    b.Navigation("TicketInfoCommentTabs");
+                });
+
+            modelBuilder.Entity("SupportTicketApp.Models.UserTab", b =>
+                {
+                    b.Navigation("TicketAssignments");
+
+                    b.Navigation("TicketInfoTabs");
+
+                    b.Navigation("UserLogTabs");
                 });
 #pragma warning restore 612, 618
         }

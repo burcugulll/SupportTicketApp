@@ -59,12 +59,14 @@ namespace SupportTicketApp.Models
             modelBuilder.Entity<TicketAssignment>()
                 .HasOne(ta => ta.TicketInfoTab)
                 .WithMany(t => t.TicketAssignments)
-                .HasForeignKey(ta => ta.TicketId);
+                .HasForeignKey(ta => ta.TicketId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<TicketAssignment>()
                 .HasOne(ta => ta.UserTab)
                 .WithMany(u => u.TicketAssignments)
-                .HasForeignKey(ta => ta.UserId);
+                .HasForeignKey(ta => ta.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
         }
