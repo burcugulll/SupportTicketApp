@@ -7,6 +7,8 @@ using System.Net.Mail;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNetCore;
+using SupportTicketApp.ViewModels;
 
 namespace SupportTicketApp.Controllers
 {
@@ -61,68 +63,63 @@ namespace SupportTicketApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTicket(TicketInfoTab model, ICollection<IFormFile> ticketImages)
+        public async Task<IActionResult> CreateTicket(CreateTicketViewModel model)
         {
-            if (ModelState.IsValid)
+            var userName = User.Identity.Name;
+            var user = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
             {
-                var userName = User.Identity.Name;
-                var user = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == userName);
-                if (user == null)
+                ModelState.AddModelError("", "Kullanıcı bulunamadı.");
+                return View(model);
+            }
+            
+            var newTicket = new TicketInfoTab
+            {
+                Title = model.Title,
+                Description = model.Description,
+                Urgency = model.Urgency,
+                UserId = user.UserId,
+                CreatedDate = DateTime.Now,
+                TicketImages = new List<TicketImage>(), 
+            };
+            // Dosya ekleniyorsa
+            if (model.TicketImages != null && model.TicketImages.Any())
+            {
+                foreach (var image in model.TicketImages)
                 {
-                    ModelState.AddModelError("", "Kullanıcı bulunamadı.");
-                    return View(model);
-                }
-
-                var newTicket = new TicketInfoTab
-                {
-                    Title = model.Title,
-                    Description = model.Description,
-                    Urgency = model.Urgency,
-                    UserId = user.UserId,
-                    CreatedDate = DateTime.Now,
-                    TicketImages = new List<TicketImage>(), // Yeni alan eklendi
-                    TicketAssignments = model.TicketAssignments ?? new List<TicketAssignment>(), // Gerekirse eklenen alan
-                    TicketInfoCommentTabs = model.TicketInfoCommentTabs ?? new List<TicketInfoCommentTab>() // Gerekirse eklenen alan
-                };
-                // Dosya ekleniyorsa
-                if (ticketImages != null && ticketImages.Any())
-                {
-                    foreach (var image in ticketImages)
+                    try
                     {
-                        try
+                        using (var memoryStream = new MemoryStream())
                         {
-                            using (var memoryStream = new MemoryStream())
+                            await image.CopyToAsync(memoryStream);
+                            var newTicketImage = new TicketImage
                             {
-                                await image.CopyToAsync(memoryStream);
-                                var newTicketImage = new TicketImage
-                                {
-                                    ImageData = memoryStream.ToArray(),
-                                    ContentType = image.ContentType,
-                                    CreatedDate = DateTime.Now,
-                                    Status = true
-                                };
-                                newTicket.TicketImages.Add(newTicketImage);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ModelState.AddModelError("", "Resim yükleme sırasında hata oluştu: " + ex.Message);
+                                ImageData = memoryStream.ToArray(),
+                                ContentType = image.ContentType,
+                                CreatedDate = DateTime.Now,
+                                Status = true
+                            };
+                            newTicket.TicketImages.Add(newTicketImage);
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", "Resim yükleme sırasında hata oluştu: " + ex.Message);
+                    }
                 }
+            }
 
-                try
-                {
-                    dbContext.TicketInfoTabs.Add(newTicket);
-                    await dbContext.SaveChangesAsync();
-                    SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
+            try
+            {
+                dbContext.TicketInfoTabs.Add(newTicket);
+                await dbContext.SaveChangesAsync();
+                SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
 
-                    return RedirectToAction("Index", "User");
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Bilet oluşturma sırasında bir hata oluştu: " + ex.Message);
-                }
+                return RedirectToAction("Index", "User");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Bilet oluşturma sırasında bir hata oluştu: " + ex.Message);
             }
 
             return View(model);
