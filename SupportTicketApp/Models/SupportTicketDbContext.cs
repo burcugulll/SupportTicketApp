@@ -32,7 +32,8 @@ namespace SupportTicketApp.Models
             modelBuilder.Entity<TicketInfoCommentTab>()
                 .HasOne(tc => tc.TicketInfoTab)
                 .WithMany(t => t.TicketInfoCommentTabs)
-                .HasForeignKey(tc => tc.TicketId);
+                .HasForeignKey(tc => tc.TicketId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // TicketInfoTab ile TicketImage arasındaki bire çok ilişkiyi tanımlıyoruz
             modelBuilder.Entity<TicketInfoTab>()
@@ -44,8 +45,8 @@ namespace SupportTicketApp.Models
             modelBuilder.Entity<TicketInfoCommentTab>()
                 .HasMany(t => t.TicketCommentImages) // TicketInfoCommentTab'ın birden fazla resmi olabilir
                 .WithOne(i => i.TicketInfoCommentTab) // TicketCommentImage'in bir TicketInfoCommentTab'ı olacak (ters ilişki)
-                .HasForeignKey(i => i.CommentId); // TicketCommentImage tablosunda CommentId, TicketInfoCommentTab'ın foreign key'i olacaktır
-
+                .HasForeignKey(i => i.CommentId) // TicketCommentImage tablosunda CommentId, TicketInfoCommentTab'ın foreign key'i olacaktır
+                .OnDelete(DeleteBehavior.NoAction);
             // UserTab ile UserLogTab arasındaki bire çok ilişki
             modelBuilder.Entity<UserLogTab>()
                 .HasOne(ul => ul.UserTab)

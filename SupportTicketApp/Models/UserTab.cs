@@ -36,10 +36,10 @@ namespace SupportTicketApp.Models
         public int LoginAttempts { get; set; }
         public DateTime? LockoutEndTime { get; set; }
         // Navigation Properties
-        public ICollection<TicketInfoTab> TicketInfoTabs { get; set; } // Bire çok: Kullanıcının oluşturduğu biletler
-        public ICollection<UserLogTab> UserLogTabs { get; set; } // Bire çok: Kullanıcının logları
-        public ICollection<TicketAssignment> TicketAssignments { get; set; } // Çoka çok: Kullanıcının atanmış biletleri
-
+        public ICollection<TicketInfoTab?> TicketInfoTabs { get; set; } // Bire çok: Kullanıcının oluşturduğu biletler
+        public ICollection<UserLogTab?> UserLogTabs { get; set; } // Bire çok: Kullanıcının logları
+        public ICollection<TicketAssignment?> TicketAssignments { get; set; } // Çoka çok: Kullanıcının atanmış biletleri
+        public ICollection<TicketInfoCommentTab?> TicketInfoCommentTabs { get; set; } 
 
 
 

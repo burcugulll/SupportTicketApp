@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupportTicketApp.Models;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -59,8 +61,7 @@ namespace SupportTicketApp.Controllers
         }
 
         [HttpPost]
-
-        public async Task<IActionResult> CreateTicket(TicketInfoTab model)
+        public async Task<IActionResult> CreateTicket(TicketInfoTab model, ICollection<IFormFile> ticketImages)
         {
             if (ModelState.IsValid)
             {
@@ -77,26 +78,56 @@ namespace SupportTicketApp.Controllers
                     Title = model.Title,
                     Description = model.Description,
                     Urgency = model.Urgency,
-                    UserId = user.UserId,  
-                    CreatedDate = DateTime.Now, 
-                    //Status = true
-
+                    UserId = user.UserId,
+                    CreatedDate = DateTime.Now,
+                    TicketImages = new List<TicketImage>(), // Yeni alan eklendi
+                    TicketAssignments = model.TicketAssignments ?? new List<TicketAssignment>(), // Gerekirse eklenen alan
+                    TicketInfoCommentTabs = model.TicketInfoCommentTabs ?? new List<TicketInfoCommentTab>() // Gerekirse eklenen alan
                 };
+                // Dosya ekleniyorsa
+                if (ticketImages != null && ticketImages.Any())
+                {
+                    foreach (var image in ticketImages)
+                    {
+                        try
+                        {
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                await image.CopyToAsync(memoryStream);
+                                var newTicketImage = new TicketImage
+                                {
+                                    ImageData = memoryStream.ToArray(),
+                                    ContentType = image.ContentType,
+                                    CreatedDate = DateTime.Now,
+                                    Status = true
+                                };
+                                newTicket.TicketImages.Add(newTicketImage);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelState.AddModelError("", "Resim yükleme sırasında hata oluştu: " + ex.Message);
+                        }
+                    }
+                }
+
                 try
                 {
                     dbContext.TicketInfoTabs.Add(newTicket);
                     await dbContext.SaveChangesAsync();
+                    SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
+
                     return RedirectToAction("Index", "User");
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Bir hata oluştu: " + ex.Message);
+                    ModelState.AddModelError("", "Bilet oluşturma sırasında bir hata oluştu: " + ex.Message);
                 }
-
-
             }
+
             return View(model);
         }
+
         // Destek biletlerinin listelenmesi
         public IActionResult TicketList()
         {
@@ -191,6 +222,8 @@ namespace SupportTicketApp.Controllers
 
                 dbContext.TicketInfoTabs.Update(ticket);
                 await dbContext.SaveChangesAsync();
+                SendEmail(ticket.UserTab.Email, "Bilet Güncellendi", "Destek biletiniz güncellenmiştir.");
+
                 ViewBag.Message = "Bilet başarıyla güncellendi.";
                 return RedirectToAction("Index", "User");  
 
@@ -224,15 +257,49 @@ namespace SupportTicketApp.Controllers
             };
 
             ticket.TicketInfoCommentTabs.Add(newComment);
-            await dbContext.SaveChangesAsync();
+            // Send email notification to assigned personnel if applicable
+            foreach (var assignment in ticket.TicketAssignments)
+            {
+                var userEmail = dbContext.UserTabs.SingleOrDefault(u => u.UserId == assignment.UserId)?.Email;
+                if (userEmail != null)
+                {
+                    SendEmail(userEmail, "Yeni Bir Yorum Eklendi", "Biletinize yeni bir yorum eklendi.");
+                }
+            }
 
             return RedirectToAction("Details", new { id = ticketId });
         }
 
-        //  E-posta gönderimi
         private void SendEmail(string to, string subject, string body)
         {
-            // SMTP üzerinden e-posta gönderme işlemi burada yapılcak
+            try
+            {
+                // SMTP sunucusu ayarları
+                var smtpClient = new SmtpClient("smtp.yourmailserver.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential("your-email@example.com", "your-password"),
+                    EnableSsl = true,
+                };
+
+                // E-posta mesajı
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress("your-email@example.com"),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true,
+                };
+                mailMessage.To.Add(to);
+
+                // SMTP üzerinden e-posta gönderimi
+                smtpClient.Send(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunda loglama veya hata mesajı göstermek için buraya kod yazabilirsiniz
+                Console.WriteLine($"E-posta gönderme hatası: {ex.Message}");
+            }
         }
 
         //  Giriş yapan kullanıcının ID'sini almak

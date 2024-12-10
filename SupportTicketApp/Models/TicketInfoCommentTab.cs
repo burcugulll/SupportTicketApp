@@ -22,7 +22,11 @@ namespace SupportTicketApp.Models
 
         public bool Status { get; set; } = true;
 
+        public int UserId { get; set; }
+
         public TicketInfoTab TicketInfoTab { get; set; } // Bire çok: Her yorum bir bilete ait
-        public ICollection<TicketCommentImage> TicketCommentImages { get; set; }
+        public ICollection<TicketCommentImage?> TicketCommentImages { get; set; }
+
+        public UserTab UserTab { get; set; }
     }
 }

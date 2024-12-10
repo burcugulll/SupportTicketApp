@@ -29,10 +29,9 @@ namespace SupportTicketApp.Models
         public int UserId { get; set; } // FK to User
         public UserTab UserTab { get; set; } // Bire çok: Her bilet bir kullanıcıya ait
 
-        public ICollection<TicketImage> TicketImages { get; set; }
-        public ICollection<TicketInfoCommentTab> TicketInfoCommentTabs { get; set; }
-
-        public ICollection<TicketAssignment> TicketAssignments { get; set; } // Çoka çok: Birden çok personele atanabilir
+        public ICollection<TicketImage?> TicketImages { get; set; }
+        public ICollection<TicketInfoCommentTab?> TicketInfoCommentTabs { get; set; }
+        public ICollection<TicketAssignment?> TicketAssignments { get; set; } // Çoka çok: Birden çok personele atanabilir
                                                                              
 
 
