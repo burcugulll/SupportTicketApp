@@ -14,8 +14,6 @@ namespace SupportTicketApp.Models
         
         public string Description { get; set; }
 
-        public int? TicketImageId { get; set; }
-
         [EnumDataType(typeof(UrgencyLevel))]
         public UrgencyLevel Urgency { get; set; } 
         public DateTime CreatedDate { get; set; } = DateTime.Now;

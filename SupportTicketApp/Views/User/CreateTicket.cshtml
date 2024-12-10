@@ -1,4 +1,4 @@
-﻿@model SupportTicketApp.Models.TicketInfoTab
+﻿@model SupportTicketApp.ViewModels.CreateTicketViewModel
 
 @{
     ViewData["Title"] = "Yeni Destek Bileti";
@@ -36,20 +36,8 @@
     </div>
     <div class="form-group" id="imageUploadContainer">
         <label for="TicketImages">Fotoğraflar (isteğe bağlı, birden fazla seçilebilir)</label>
-        <input type="file" class="form-control" id="TicketImages" name="TicketImages[]" multiple />
-        <button type="button" class="btn btn-secondary mt-2" id="addImageButton">Fotoğraf Ekle</button>
+        <input type="file" class="form-control" id="TicketImages" name="TicketImages" multiple />
         <span asp-validation-for="TicketImages" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Bilet Oluştur</button>
 </form>
-@section Scripts {
-    <script type="text/javascript">
-        $(document).ready(function () {
-            var imageUploadContainer = $('#imageUploadContainer');
-            $('#addImageButton').click(function () {
-                var newInput = $('<input type="file" class="form-control mt-2" name="TicketImages[]" multiple />');
-                imageUploadContainer.append(newInput);
-            });
-        });
-    </script>
-}
