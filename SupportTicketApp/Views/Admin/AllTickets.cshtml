@@ -1,4 +1,7 @@
-﻿<h2>Tüm Biletler</h2>
+﻿@model IEnumerable<SupportTicketApp.Models.TicketInfoTab>
+
+<h2>Tüm Biletler</h2>
+
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
@@ -20,7 +23,7 @@
                 <th>Oluşturan Kullanıcı</th>
                 <th>Oluşturulma Tarihi</th>
                 <th>Resim</th>
-                <th>Tamamlanma Durumu</th>  
+                <th>Tamamlanma Durumu</th>
                 <th>İşlemler</th>
             </tr>
         </thead>
@@ -37,9 +40,13 @@
                     <td>@(ticket.UserTab?.Name ?? "Atanmamış")</td>
                     <td>@ticket.CreatedDate.ToShortDateString()</td>
                     <td>
-                        @if (ticket.TicketImage != null)
+                        @if (ticket.TicketImages != null && ticket.TicketImages.Any())
                         {
-                            <img src="@ticket.TicketImage.ImageUrl" alt="Resim" style="width: 50px;" />
+                            var firstImage = ticket.TicketImages.FirstOrDefault();
+                            if (firstImage != null)
+                            {
+                                <img src="data:@firstImage.ContentType;base64,@Convert.ToBase64String(firstImage.ImageData)" alt="Resim" style="width: 50px;" />
+                            }
                         }
                         else
                         {
@@ -59,7 +66,6 @@
                     <td>
                         <a asp-controller="Admin" asp-action="TicketDetails" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
                         <a asp-controller="Admin" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
-                        
                     </td>
                 </tr>
             }
@@ -70,11 +76,10 @@
         <button type="submit" name="action" value="complete" class="btn btn-success">Tamamlandı</button>
         <button type="submit" name="action" value="delete" class="btn btn-danger">Sil</button>
     </div>
-
 </form>
 
 <script>
-    document.getElementById("selectAll").addEventListener("click", function() {
+    document.getElementById("selectAll").addEventListener("click", function () {
         const checkboxes = document.querySelectorAll("input[name='ticketIds']");
         checkboxes.forEach(cb => cb.checked = this.checked);
     });

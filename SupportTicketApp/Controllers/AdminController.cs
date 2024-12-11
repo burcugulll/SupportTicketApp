@@ -76,26 +76,38 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("Index");
 
         }
-       
-        // Tüm Biletler
+
+        //// Tüm Biletler
+        //public async Task<IActionResult> AllTickets()
+        //{
+        //    List<TicketInfoTab> ticketInfos = await _context.TicketInfoTabs.ToListAsync();
+
+        //    foreach (var ticket in ticketInfos)
+        //    {
+        //        ticket.UserTab = await _context.UserTabs.FirstOrDefaultAsync(x => x.UserId == ticket.UserId);
+        //    }
+
+
+        //    var tickets = await _context.TicketInfoTabs
+        //        .Include(t => t.UserTab)
+        //        .Include(t => t.TicketImages)
+        //        .Include(t => t.TicketInfoCommentTabs)
+        //            .ThenInclude(c => c.TicketCommentImages)
+        //        .ToListAsync();
+
+        //    return View(tickets); 
+        //}
+
         public async Task<IActionResult> AllTickets()
         {
-            List<TicketInfoTab> ticketInfos = await _context.TicketInfoTabs.ToListAsync();
-
-            foreach (var ticket in ticketInfos)
-            {
-                ticket.UserTab = await _context.UserTabs.FirstOrDefaultAsync(x => x.UserId == ticket.UserId);
-            }
-
-
             var tickets = await _context.TicketInfoTabs
-                .Include(t => t.UserTab)
-                .Include(t => t.TicketImages)
-                .Include(t => t.TicketInfoCommentTabs)
-                    .ThenInclude(c => c.TicketCommentImages)
+                .Include(t => t.UserTab) // Kullanıcı bilgilerini dahil et
+                .Include(t => t.TicketImages) // Fotoğrafları dahil et
+                .Include(t => t.TicketInfoCommentTabs) // Yorumları dahil et
+                    .ThenInclude(c => c.TicketCommentImages) // Yorumların fotoğraflarını dahil et
                 .ToListAsync();
 
-            return View(tickets); 
+            return View(tickets);
         }
 
         // Devam Eden Biletler
@@ -116,7 +128,7 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> UnassignedTickets()
         {
             var tickets = await _context.TicketInfoTabs
-        .Where(t => t.UserTab == null && t.IsCompleted == false) 
+        .Where(t => !t.TicketAssignments.Any() && !t.IsCompleted) // Biletler, hiç atanmamış ve tamamlanmamış olmalı
                 .Include(t => t.UserTab)
                 .Include(t => t.TicketImages)
                 .Include(t => t.TicketInfoCommentTabs)
