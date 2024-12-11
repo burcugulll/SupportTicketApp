@@ -1,31 +1,47 @@
-﻿@model SupportTicketApp.Models.TicketInfoTab
+﻿ @model SupportTicketApp.ViewModels.CreateTicketViewModel
 
 <h1>Bilet Düzenle</h1>
 
-@if (ViewBag.CanEdit == true)
-{
-    <form asp-action="EditTicket" method="post">
-        <input type="hidden" asp-for="TicketId" />
-        <div class="form-group">
-            <label for="Title">Başlık</label>
-            <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+<form asp-action="EditTicket" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="TicketId" value="@ViewBag.TicketId" />
+    <div class="form-group">
+        <label for="Title">Başlık</label>
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+    </div>
+    <div class="form-group">
+        <label for="Description">Açıklama</label>
+        <textarea class="form-control" id="Description" name="Description" required>@Model.Description</textarea>
+    </div>
+    <div class="form-group">
+        <label for="Urgency">Aciliyet</label>
+        <select class="form-control" id="Urgency" name="Urgency">
+            <option value="0">Düşük</option>
+            <option value="1">Orta</option>
+            <option value="2">Yüksek</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Mevcut Fotoğraflar</label>
+        <div class="row">
+            @if (ViewBag.TicketImages != null && ViewBag.TicketImages.Count > 0)
+            {
+                foreach (var image in ViewBag.TicketImages)
+                {
+                    <div class="col-md-3">
+                        <img src="data:@image.ContentType;base64,@Convert.ToBase64String(image.ImageData)" class="img-thumbnail" alt="Bilet Fotoğrafı" />
+                        <input type="checkbox" name="DeletedImageIds" value="@image.TicketImageId" /> Sil
+                    </div>
+                }
+            }
+            else
+            {
+                <p>Veritabanında kaydedilmiş resim bulunamadı.</p>
+            }
         </div>
-        <div class="form-group">
-            <label for="Description">Açıklama</label>
-            <textarea class="form-control" id="Description" name="Description" required>@Model.Description</textarea>
-        </div>
-        <div class="form-group">
-            <label for="Urgency">Aciliyet</label>
-            <select class="form-control" id="Urgency" name="Urgency">
-                <option value="0">Düşük</option>
-                <option value="1">Orta</option>
-                <option value="2">Yüksek</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Güncelle</button>
-    </form>
-}
-else
-{
-    <p>Bu bilet üzerinde işlem yapma yetkiniz yok.</p>
-}
+    </div>
+    <div class="form-group">
+        <label for="NewImages">Yeni Fotoğraflar Yükle</label>
+        <input type="file" class="form-control" id="NewImages" name="TicketImages" multiple />
+    </div>
+    <button type="submit" class="btn btn-primary">Güncelle</button>
+</form>

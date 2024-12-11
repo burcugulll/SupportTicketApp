@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using SupportTicketApp.Models;
 using SupportTicketApp.ViewModels;
 using System.Net;
@@ -101,7 +102,7 @@ namespace SupportTicketApp.Controllers
                 dbContext.TicketImages.AddRange(newTicketImages);
                 await dbContext.SaveChangesAsync();
 
-                SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
+                //SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
 
                 return RedirectToAction("Index", "User");
             }
@@ -146,79 +147,88 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("Index");
         }
 
-
+        // Edit Ticket
         [HttpGet]
         public async Task<IActionResult> EditTicket(int id)
         {
             var ticket = await dbContext.TicketInfoTabs
-                                        .Include(t => t.UserTab)
-                                        .FirstOrDefaultAsync(t => t.TicketId == id);
+                .Include(t => t.TicketImages)
+                .SingleOrDefaultAsync(t => t.TicketId == id);
 
             if (ticket == null)
             {
-                return NotFound("Bilet bulunamadı.");
-            }
-            var currentUserName = User.FindFirstValue(ClaimTypes.Name);
-            if (ticket.TicketAssignments != null && ticket.TicketAssignments.Any())
-            {
-                if (ticket.UserTab.UserName != currentUserName)
-                {
-                    return Forbid("Atanmış bir bilet üzerinde işlem yapma yetkiniz yok.");
-                }
-                ViewBag.CanEdit = false;  
-            }
-            else
-            {
-                ViewBag.CanEdit = true; 
+                return NotFound();
             }
 
-            return View(ticket);
+            var model = new CreateTicketViewModel
+            {
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Urgency = ticket.Urgency,
+                TicketImages = null 
+            };
+
+            ViewBag.TicketImages = ticket.TicketImages;
+
+            return View(model);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> EditTicket(TicketInfoTab model)
+        public async Task<IActionResult> EditTicket(int id, CreateTicketViewModel model)
         {
             var ticket = await dbContext.TicketInfoTabs
-       .Include(t => t.UserTab)  
-       .FirstOrDefaultAsync(t => t.TicketId == model.TicketId);
+                .Include(t => t.TicketImages)
+                .SingleOrDefaultAsync(t => t.TicketId == id);
+
             if (ticket == null)
             {
-                return NotFound("Bilet bulunamadı.");
+                return NotFound();
             }
 
-            var currentUserName = User.FindFirstValue(ClaimTypes.Name);
+            ticket.Title = model.Title;
+            ticket.Description = model.Description;
+            ticket.Urgency = model.Urgency;
 
-            if (ticket.TicketAssignments != null && ticket.TicketAssignments.Any())
+            // Yeni resimler ekle
+            if (model.TicketImages != null && model.TicketImages.Any())
             {
-                if (ticket.UserTab != null && ticket.UserTab.UserName != currentUserName)
+                foreach (var image in model.TicketImages)
                 {
-                    return Forbid("Atanmış bir bilet üzerinde işlem yapma yetkiniz yok.");
+                    var newTicketImage = new TicketImage();
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        newTicketImage.ImageData = memoryStream.ToArray();
+                        newTicketImage.ContentType = image.ContentType;
+                        newTicketImage.Status = true;
+                        newTicketImage.TicketId = ticket.TicketId;
+                    }
+
+                    dbContext.TicketImages.Add(newTicketImage);
                 }
             }
 
-            if ((ticket.UserTab != null && ticket.UserTab.UserName == currentUserName) || !ticket.TicketAssignments.Any())
-
+            // Mevcut resimlerden silme işlemi
+            if (!StringValues.IsNullOrEmpty(Request.Form["DeletedImageIds"]))
             {
-                // Bilet güncelleme
-                ticket.Title = model.Title;
-                ticket.Description = model.Description;
-                ticket.Urgency = model.Urgency;
-                ticket.ModifiedDate = DateTime.Now;
+                var deletedImageIds = Request.Form["DeletedImageIds"]
+                    .ToString()
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse)
+                    .ToList();
 
-                dbContext.TicketInfoTabs.Update(ticket);
-                await dbContext.SaveChangesAsync();
-                SendEmail(ticket.UserTab.Email, "Bilet Güncellendi", "Destek biletiniz güncellenmiştir.");
+                var imagesToDelete = ticket.TicketImages
+                    .Where(img => deletedImageIds.Contains(img.TicketImageId))
+                    .ToList();
 
-                ViewBag.Message = "Bilet başarıyla güncellendi.";
-                return RedirectToAction("Index", "User");  
-
-
-            }
-            else
-            {
-                return Forbid("Bu bilet üzerinde işlem yapma yetkiniz yok.");
+                dbContext.TicketImages.RemoveRange(imagesToDelete);
             }
 
+
+            await dbContext.SaveChangesAsync();
+            return RedirectToAction("Index", "User");
         }
 
 
