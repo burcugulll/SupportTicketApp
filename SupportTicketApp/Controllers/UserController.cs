@@ -210,7 +210,7 @@ namespace SupportTicketApp.Controllers
                 }
             }
 
-            // Mevcut resimlerden silme işlemi
+            // Mevcut resimlerden silme işlemi(soft delete)
             if (!StringValues.IsNullOrEmpty(Request.Form["DeletedImageIds"]))
             {
                 var deletedImageIds = Request.Form["DeletedImageIds"]
@@ -223,7 +223,13 @@ namespace SupportTicketApp.Controllers
                     .Where(img => deletedImageIds.Contains(img.TicketImageId))
                     .ToList();
 
-                dbContext.TicketImages.RemoveRange(imagesToDelete);
+                foreach (var img in imagesToDelete)
+                {
+                    img.Status = false;  
+                    img.DeletedDate = DateTime.Now;  
+                }
+
+                dbContext.TicketImages.UpdateRange(imagesToDelete);  // Güncelleme işlemi, sadece durumu pasif yap
             }
 
 

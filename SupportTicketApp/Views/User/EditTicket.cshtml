@@ -27,6 +27,10 @@
             {
                 foreach (var image in ViewBag.TicketImages)
                 {
+                    if (!image.Status) // Eğer resim silindiyse, gösterme
+                    {
+                        continue;
+                    }
                     <div class="col-md-3">
                         <img src="data:@image.ContentType;base64,@Convert.ToBase64String(image.ImageData)" class="img-thumbnail" alt="Bilet Fotoğrafı" />
                         <input type="checkbox" name="DeletedImageIds" value="@image.TicketImageId" /> Sil
