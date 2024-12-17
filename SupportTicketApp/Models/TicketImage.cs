@@ -17,7 +17,7 @@ namespace SupportTicketApp.Models
         public DateTime? DeletedDate { get; set; }
         public bool Status { get; set; } = true;
 
-        public int TicketId { get; set; }  // Bu satır eklendi
+        public int TicketId { get; set; } 
 
 
         // Navigation properties

@@ -29,11 +29,7 @@
                 <td>
                     @if (ticket.TicketImages != null && ticket.TicketImages.Any())
                     {
-                        var firstImage = ticket.TicketImages.FirstOrDefault();
-                        if (firstImage != null)
-                        {
-                            <img src="data:@firstImage.ContentType;base64,@Convert.ToBase64String(firstImage.ImageData)" alt="Resim" style="width: 50px;" />
-                        }
+                        <span>Resim var</span>
                     }
                     else
                     {

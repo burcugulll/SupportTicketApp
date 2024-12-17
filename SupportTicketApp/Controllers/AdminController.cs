@@ -13,6 +13,9 @@ using iText.Layout.Element;
 using System.IO;
 using iText.IO.Font;
 using iText.Kernel.Font;
+using iText.Commons.Actions.Contexts;
+using Microsoft.Extensions.Primitives;
+using iText.IO.Image;
 
 
 namespace SupportTicketApp.Controllers
@@ -145,12 +148,14 @@ namespace SupportTicketApp.Controllers
             return View(users);
         }
 
-        
+
         public IActionResult TicketDetails(int ticketId)
         {
             var ticket = _context.TicketInfoTabs
+                .Include(t => t.UserTab)
+                .Include(t => t.TicketImages)
                 .Include(t => t.TicketAssignments)
-                .Include(t => t.TicketInfoCommentTabs)      
+                .Include(t => t.TicketInfoCommentTabs)
                 .FirstOrDefault(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -159,14 +164,15 @@ namespace SupportTicketApp.Controllers
             }
             ViewBag.Users = _context.UserTabs
                 .Where(u => u.UserType == UserType.Calisan)
-       .Select(u => new { u.UserId, u.Name }) 
+       .Select(u => new { u.UserId, u.Name })
        .ToList();
 
-            return View(ticket); 
+            return View(ticket);
         }
 
 
-        [HttpPost]
+
+       [HttpPost]
         public async Task<IActionResult> AddComment(int ticketId, string commentTitle, string commentDescription)
         {
             var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
@@ -326,6 +332,8 @@ namespace SupportTicketApp.Controllers
         public IActionResult ExportToPdf(int ticketId)
         {
             var ticket = _context.TicketInfoTabs
+                .Include(t => t.UserTab) 
+                .Include(t => t.TicketImages)
                 .Include(t => t.TicketInfoCommentTabs)
                 .ThenInclude(c => c.TicketCommentImages)
                 .FirstOrDefault(t => t.TicketId == ticketId);
@@ -347,7 +355,23 @@ namespace SupportTicketApp.Controllers
                 document.Add(new Paragraph($"Öncelik: {ticket.Urgency}").SetFont(font));
                 document.Add(new Paragraph($"Durum: {(ticket.Status ? "Aktif" : "Pasif")}").SetFont(font));
                 document.Add(new Paragraph($"Oluşturma Tarihi: {ticket.CreatedDate.ToString("dd.MM.yyyy")}").SetFont(font));
-               
+                document.Add(new Paragraph($"Oluşturan Kullanıcı: {ticket.UserTab?.Name ?? "Bilinmiyor"}").SetFont(font));
+                if (ticket.TicketImages != null && ticket.TicketImages.Any())
+                {
+                    document.Add(new Paragraph("Resimler:").SetFont(font));
+
+                    var imageParagraph = new Paragraph(); 
+                    foreach (var image in ticket.TicketImages)
+                    {
+                        var imageData = ImageDataFactory.Create(image.ImageData);
+                        var pdfImage = new iText.Layout.Element.Image(imageData)
+                            .SetWidth(100) 
+                            .SetHeight(100) 
+                            .SetMarginRight(10); 
+                        imageParagraph.Add(pdfImage);
+                    }
+                    document.Add(imageParagraph); 
+                }
 
                 if (ticket.TicketInfoCommentTabs != null && ticket.TicketInfoCommentTabs.Any())
                 {
