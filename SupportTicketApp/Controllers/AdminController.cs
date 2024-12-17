@@ -170,9 +170,96 @@ namespace SupportTicketApp.Controllers
             return View(ticket);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditTicket(int ticketId)
+        {
+            var ticket = await _context.TicketInfoTabs
+                .Include(t => t.TicketImages)
+                .SingleOrDefaultAsync(t => t.TicketId == ticketId);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            var model = new CreateTicketViewModel
+            {
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Urgency = ticket.Urgency,
+                TicketImages = null
+            };
+            ViewBag.TicketId = ticket.TicketId; // TicketId ViewBag üzerinden taşınıyor.
+
+            ViewBag.TicketImages = ticket.TicketImages;
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditTicket(int ticketId, CreateTicketViewModel model)
+        {
+            var ticket = await _context.TicketInfoTabs
+                .Include(t => t.TicketImages)
+                .SingleOrDefaultAsync(t => t.TicketId == ticketId);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            ticket.Title = model.Title;
+            ticket.Description = model.Description;
+            ticket.Urgency = model.Urgency;
+
+            // Add new images
+            if (model.TicketImages != null && model.TicketImages.Any())
+            {
+                foreach (var image in model.TicketImages)
+                {
+                    var newTicketImage = new TicketImage();
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        newTicketImage.ImageData = memoryStream.ToArray();
+                        newTicketImage.ContentType = image.ContentType;
+                        newTicketImage.Status = true;
+                        newTicketImage.TicketId = ticket.TicketId;
+                    }
+
+                    _context.TicketImages.Add(newTicketImage);
+                }
+            }
+
+            // Update existing images (soft delete)
+            if (!StringValues.IsNullOrEmpty(Request.Form["DeletedImageIds"]))
+            {
+                var deletedImageIds = Request.Form["DeletedImageIds"]
+                    .ToString()
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse)
+                    .ToList();
+
+                var imagesToDelete = ticket.TicketImages
+                    .Where(img => deletedImageIds.Contains(img.TicketImageId))
+                    .ToList();
+
+                foreach (var img in imagesToDelete)
+                {
+                    img.Status = false;  // Mark image as inactive
+                    img.DeletedDate = DateTime.Now;  // Update deletion date
+                }
+
+                _context.TicketImages.UpdateRange(imagesToDelete);  // Update status to inactive
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("TicketDetails", new { ticketId = ticket.TicketId });
+        }
 
 
-       [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> AddComment(int ticketId, string commentTitle, string commentDescription)
         {
             var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
