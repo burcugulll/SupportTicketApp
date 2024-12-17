@@ -80,27 +80,6 @@ namespace SupportTicketApp.Controllers
 
         }
 
-        //// Tüm Biletler
-        //public async Task<IActionResult> AllTickets()
-        //{
-        //    List<TicketInfoTab> ticketInfos = await _context.TicketInfoTabs.ToListAsync();
-
-        //    foreach (var ticket in ticketInfos)
-        //    {
-        //        ticket.UserTab = await _context.UserTabs.FirstOrDefaultAsync(x => x.UserId == ticket.UserId);
-        //    }
-
-
-        //    var tickets = await _context.TicketInfoTabs
-        //        .Include(t => t.UserTab)
-        //        .Include(t => t.TicketImages)
-        //        .Include(t => t.TicketInfoCommentTabs)
-        //            .ThenInclude(c => c.TicketCommentImages)
-        //        .ToListAsync();
-
-        //    return View(tickets); 
-        //}
-
         public async Task<IActionResult> AllTickets()
         {
             var tickets = await _context.TicketInfoTabs
@@ -199,6 +178,7 @@ namespace SupportTicketApp.Controllers
         [HttpPost]
         public async Task<IActionResult> EditTicket(int ticketId, CreateTicketViewModel model)
         {
+
             var ticket = await _context.TicketInfoTabs
                 .Include(t => t.TicketImages)
                 .SingleOrDefaultAsync(t => t.TicketId == ticketId);
@@ -542,9 +522,12 @@ namespace SupportTicketApp.Controllers
                 {
                     var ticketAssignment = new TicketAssignment
                     {
-                        TicketId = ticket.TicketId,  // İlgili biletin TicketId'sini ayarlayın
-                        UserId = user.UserId,        // Kullanıcının UserId'sini ayarlayın
-                                                     // Diğer gerekli alanları da buraya ekleyebilirsiniz (varsa)
+                        TicketId = ticket.TicketId,  
+                        UserId = user.UserId,
+                        AssignedDate = DateTime.Now ,
+                        Status=ticket.Status,
+                        IsCompleted=ticket.IsCompleted
+                                                     
                     };
 
                     ticket.TicketAssignments.Add(ticketAssignment);  // TicketAssignment nesnesini koleksiyona ekleyin

@@ -107,8 +107,8 @@
         <h3>Personel Ata</h3>
         <form asp-action="AssignUsersToTicket" method="post">
             <input type="hidden" name="ticketId" value="@Model.TicketId" />
-            <label for="userSelect">Personel Ata:</label>
-            <select id="Users" name="UserId" class="form-select" multiple>
+            <label for="Users">Personel Ata:</label>
+            <select id="Users" name="userIds" class="form-select" multiple>
                 @if (ViewBag.Users != null)
                 {
                     foreach (var user in ViewBag.Users)
