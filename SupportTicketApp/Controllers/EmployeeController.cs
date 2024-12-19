@@ -14,6 +14,9 @@ using iText.IO.Image;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Layout.Element;
+using Microsoft.AspNetCore.Hosting.Server;
+using iText.Commons.Actions.Contexts;
+using SupportTicketApp.ViewModels;
 
 namespace SupportTicketApp.Controllers
 {
@@ -99,41 +102,77 @@ namespace SupportTicketApp.Controllers
 
         //    return RedirectToAction("AssignedTickets"); // İşlem tamamlandıktan sonra sayfayı yenile
         //}
-        //public async Task<IActionResult> TicketDetails(int id)
-        //{
-        //    var userId = int.Parse(User.Identity.Name); // Giriş yapan kullanıcının ID'si
+        
+        [HttpGet]
+        public IActionResult AddComment()
+        {
+            return View();
+        }
+       
+        [HttpPost]
+        public async Task<IActionResult> AddComment(CommentViewModel model)
+        {
+            var ticketIdString = User.Identity.Name;
+            if (int.TryParse(ticketIdString, out var ticketId))
+            {
+                var ticket = await _context.TicketInfoTabs.SingleOrDefaultAsync(u => u.TicketId == ticketId);
+                if (ticket == null)
+                {
+                    ModelState.AddModelError("", "Ticket bulunamadı.");
+                    return View(model);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("", "Geçersiz Ticket ID.");
+                return View(model);
+            }
 
-        //    // Ticketi ve atanmış kişiyi kontrol et
-        //    var ticket = await _context.TicketInfoTabs
-        //        .Include(t => t.TicketAssignments)
-        //        .FirstOrDefaultAsync(t => t.TicketId == id && t.TicketAssignments.Any(a => a.UserId == userId));
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var ticketInfoComment = new TicketInfoCommentTab
+            {
+                TicketId = ticketId, // Doğrudan ticketId'yi kullanmak için parse edilmiş int değerini kullanın
+                Title = model.Title,
+                Description = model.Description,
+                CreatedDate = DateTime.Now,
+                Status = true,
+                UserId = userId
+            };
 
-        //    if (ticket == null)
-        //    {
-        //        TempData["ErrorMessage"] = "Bilet bulunamadı veya bu bilet size atanmadı.";
-        //        return RedirectToAction("AssignedTickets");
-        //    }
+            _context.TicketInfoCommentTabs.Add(ticketInfoComment);
+            await _context.SaveChangesAsync();
 
-        //    return View(ticket);
-        //}
+            // Yüklenen fotoğrafları kaydet
+            if (model.CommentImages != null && model.CommentImages.Count > 0)
+            {
+                foreach (var image in model.CommentImages)
+                {
+                    if (image.Length > 0)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await image.CopyToAsync(memoryStream);
+                            var ticketCommentImage = new TicketCommentImage
+                            {
+                                CommentId = ticketInfoComment.CommentId,
+                                ImageData = memoryStream.ToArray(),
+                                ContentType = image.ContentType,
+                                CreatedDate = DateTime.Now,
+                                Status = true
+                            };
+                            _context.TicketCommentImages.Add(ticketCommentImage);
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("AssignedTickets", "Employee", new { id = ticketId });
+        }
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> AddComment(int TicketId, string Title, string Description)
-        //{
-        //    var comment = new TicketInfoCommentTab
-        //    {
-        //        TicketId = TicketId,
-        //        Title = Title,
-        //        Description = Description,
-        //        CreatedDate = DateTime.Now
-        //    };
 
-        //    _context.TicketInfoCommentTabs.Add(comment);
-        //    await _context.SaveChangesAsync();
-
-        //    return RedirectToAction(nameof(TicketDetails), new { id = TicketId });
-        //}
 
         public IActionResult ExportToPdf(int ticketId)
         {

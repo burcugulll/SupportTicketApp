@@ -101,7 +101,7 @@ namespace SupportTicketApp.Controllers
                         }
                         else if (user.UserType == UserType.Calisan)
                         {
-                            return RedirectToAction("Index", "Employee");
+                            return RedirectToAction("AssignedTickets", "Employee");
 
                         }
                         else
