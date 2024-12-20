@@ -43,7 +43,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketAssignments", (string)null);
+                    b.ToTable("TicketAssignments");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketCommentImage", b =>
@@ -81,7 +81,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.ToTable("TicketCommentImages", (string)null);
+                    b.ToTable("TicketCommentImages");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketImage", b =>
@@ -119,7 +119,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("TicketImages", (string)null);
+                    b.ToTable("TicketImages");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoCommentTab", b =>
@@ -163,7 +163,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketInfoCommentTabs", (string)null);
+                    b.ToTable("TicketInfoCommentTabs");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
@@ -208,7 +208,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketInfoTabs", (string)null);
+                    b.ToTable("TicketInfoTabs");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.UserLogTab", b =>
@@ -243,7 +243,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLogTabs", (string)null);
+                    b.ToTable("UserLogTabs");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.UserTab", b =>
@@ -305,7 +305,7 @@ namespace SupportTicketApp.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserTabs", (string)null);
+                    b.ToTable("UserTabs");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketAssignment", b =>
@@ -313,7 +313,7 @@ namespace SupportTicketApp.Migrations
                     b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
                         .WithMany("TicketAssignments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")

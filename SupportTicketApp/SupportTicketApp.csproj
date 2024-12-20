@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\NewFolder\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

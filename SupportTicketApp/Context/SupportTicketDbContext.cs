@@ -76,7 +76,7 @@ namespace SupportTicketApp.Context
                 .HasOne(ta => ta.TicketInfoTab)
                 .WithMany(t => t.TicketAssignments)
                 .HasForeignKey(ta => ta.TicketId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<TicketAssignment>()
                 .HasOne(ta => ta.UserTab)

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SupportTicketApp.Migrations
 {
     /// <inheritdoc />
-    public partial class NewDB : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,7 +44,6 @@ namespace SupportTicketApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TicketImageId = table.Column<int>(type: "int", nullable: true),
                     Urgency = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -109,7 +108,8 @@ namespace SupportTicketApp.Migrations
                         name: "FK_TicketAssignments_UserTabs_UserId",
                         column: x => x.UserId,
                         principalTable: "UserTabs",
-                        principalColumn: "UserId");
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,7 +118,8 @@ namespace SupportTicketApp.Migrations
                 {
                     TicketImageId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -142,13 +143,14 @@ namespace SupportTicketApp.Migrations
                 {
                     CommentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TicketId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: false)
+                    Status = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    TicketId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -159,6 +161,11 @@ namespace SupportTicketApp.Migrations
                         principalTable: "TicketInfoTabs",
                         principalColumn: "TicketId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TicketInfoCommentTabs_UserTabs_UserId",
+                        column: x => x.UserId,
+                        principalTable: "UserTabs",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -167,7 +174,8 @@ namespace SupportTicketApp.Migrations
                 {
                     CommentImageId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -204,6 +212,11 @@ namespace SupportTicketApp.Migrations
                 name: "IX_TicketInfoCommentTabs_TicketId",
                 table: "TicketInfoCommentTabs",
                 column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketInfoCommentTabs_UserId",
+                table: "TicketInfoCommentTabs",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TicketInfoTabs_UserId",

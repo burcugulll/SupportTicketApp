@@ -115,8 +115,6 @@ namespace SupportTicketApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
-            
-
             var userName = User.FindFirstValue(ClaimTypes.Name);
             if (string.IsNullOrEmpty(userName))
             {
@@ -130,19 +128,8 @@ namespace SupportTicketApp.Controllers
                 return View(model);
             }
             var userId = user.UserId;
-            //int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
-            //var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
-            //if (!int.TryParse(Request.Form["TicketId"], out int ticketId) || ticketId <= 0)
-            //{
-            //    ModelState.AddModelError("", "Geçersiz Ticket ID.");
-            //    return View(model);
-            //}
-            //var ticket = await _context.TicketInfoTabs.SingleOrDefaultAsync(u => u.TicketId == TicketId);
-            //var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
-            // TicketId'yi alın
+            
             int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
-
-            // Ticket'ı veritabanında sorgulayın
             var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
             if (ticket == null)
             {

@@ -87,20 +87,6 @@
             <p>Yorum bulunamadı.</p>
         }
 
-
-       @*  <!-- Yeni Yorum Ekleme -->
-        <form asp-action="AddComment" method="post">
-            <input type="hidden" name="ticketId" value="@Model.TicketId" />
-            <div class="form-group">
-                <label for="commentTitle">Başlık</label>
-                <input type="text" class="form-control" id="commentTitle" name="commentTitle" required />
-            </div>
-            <div class="form-group">
-                <label for="commentDescription">Açıklama</label>
-                <textarea class="form-control" id="commentDescription" name="commentDescription" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-success mt-3">Yorum Ekle</button>
-        </form> *@
     </div>
     <!-- Personel Ata -->
     <div class="assign-personnel">
@@ -134,25 +120,5 @@
         <a asp-action="CompleteTicket" asp-route-ticketId="@Model.TicketId" class="btn btn-primary">Durumu Güncelle</a>
 
         <a asp-action="ExportToPdf" asp-route-ticketId="@Model.TicketId" class="btn btn-secondary">PDF İndir</a>
-        @* <form asp-action="AssignUsersToTicket" method="post">
-            <input type="hidden" name="ticketId" value="@Model.TicketId" />
-            <label for="userSelect">Personel Ata:</label>
-            <select id="Users" name="UserId" class="form-select">
-                @if (ViewBag.Users != null)
-                {
-                    foreach (var user in ViewBag.Users)
-                    {
-                        <option value="@user.UserId">@user.Name</option>
-                    }
-                }
-                else
-                {
-                    <option value="">Kullanıcı bulunamadı</option>
-                }
-            </select>
-
-            <button type="submit" class="btn btn-primary mt-2">Ata</button>
-        </form> *@
-
     </div>
 </div>
