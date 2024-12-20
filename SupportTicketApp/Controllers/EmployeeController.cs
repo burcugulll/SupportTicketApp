@@ -17,6 +17,7 @@ using iText.Layout.Element;
 using Microsoft.AspNetCore.Hosting.Server;
 using iText.Commons.Actions.Contexts;
 using SupportTicketApp.ViewModels;
+using SupportTicketApp.Context;
 
 namespace SupportTicketApp.Controllers
 {
@@ -104,34 +105,53 @@ namespace SupportTicketApp.Controllers
         //}
         
         [HttpGet]
-        public IActionResult AddComment()
+        public IActionResult AddComment(int ticketId)
         {
+            ViewBag.TicketId = ticketId;
+
             return View();
         }
-       
+
         [HttpPost]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
-            var ticketIdString = User.Identity.Name;
-            if (int.TryParse(ticketIdString, out var ticketId))
+            
+
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(userName))
             {
-                var ticket = await _context.TicketInfoTabs.SingleOrDefaultAsync(u => u.TicketId == ticketId);
-                if (ticket == null)
-                {
-                    ModelState.AddModelError("", "Ticket bulunamadı.");
-                    return View(model);
-                }
-            }
-            else
-            {
-                ModelState.AddModelError("", "Geçersiz Ticket ID.");
+                ModelState.AddModelError("", "Kullanıcı kimliği bulunamadı.");
                 return View(model);
             }
+            var user = await _context.UserTabs.FirstOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Kullanıcı bulunamadı.");
+                return View(model);
+            }
+            var userId = user.UserId;
+            //int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
+            //var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+            //if (!int.TryParse(Request.Form["TicketId"], out int ticketId) || ticketId <= 0)
+            //{
+            //    ModelState.AddModelError("", "Geçersiz Ticket ID.");
+            //    return View(model);
+            //}
+            //var ticket = await _context.TicketInfoTabs.SingleOrDefaultAsync(u => u.TicketId == TicketId);
+            //var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+            // TicketId'yi alın
+            int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            // Ticket'ı veritabanında sorgulayın
+            var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+            if (ticket == null)
+            {
+                ModelState.AddModelError("", "Ticket bulunamadı.");
+                return View(model);
+            }
             var ticketInfoComment = new TicketInfoCommentTab
             {
-                TicketId = ticketId, // Doğrudan ticketId'yi kullanmak için parse edilmiş int değerini kullanın
+                TicketId = ticketId,
                 Title = model.Title,
                 Description = model.Description,
                 CreatedDate = DateTime.Now,
@@ -170,6 +190,7 @@ namespace SupportTicketApp.Controllers
 
             return RedirectToAction("AssignedTickets", "Employee", new { id = ticketId });
         }
+
 
 
 

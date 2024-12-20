@@ -1,7 +1,11 @@
-﻿@model SupportTicketApp.Models.TicketInfoCommentTab
+﻿@model SupportTicketApp.ViewModels.CommentViewModel
 
 @{
     ViewBag.Title = "Add Comment";
+    // int ticketId = ViewBag.TicketId != null ? (int)ViewBag.TicketId : 0;
+    int ticketId = ViewBag.TicketId as int? ?? 0; // Null kontrolü ile TicketId alınıyor
+
+
 }
 
 <h2>Add Comment</h2>
@@ -9,7 +13,7 @@
 @using (Html.BeginForm("AddComment", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.TicketId)
+    @Html.Hidden("TicketId", ticketId)
 
     <div class="form-group">
         @Html.LabelFor(model => model.Title)
@@ -24,8 +28,8 @@
     </div>
 
     <div class="form-group">
-        <label for="commentImages">Attach Images (Optional)</label>
-        <input type="file" name="commentImages" class="form-control" multiple />
+        <label for="CommentImages">Attach Images (Optional)</label>
+        <input type="file" name="CommentImages" class="form-control" multiple />
     </div>
 
     <button type="submit" class="btn btn-primary">Submit Comment</button>

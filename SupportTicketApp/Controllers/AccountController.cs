@@ -10,6 +10,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using SupportTicketApp.Context;
 
 
 namespace SupportTicketApp.Controllers

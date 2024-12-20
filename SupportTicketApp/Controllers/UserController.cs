@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
+using SupportTicketApp.Context;
 using SupportTicketApp.Models;
 using SupportTicketApp.ViewModels;
 using System.Net;

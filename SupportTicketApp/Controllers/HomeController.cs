@@ -3,6 +3,7 @@ using SupportTicketApp.Models;
 using System.Diagnostics;
 using SupportTicketApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using SupportTicketApp.Context;
 
 namespace SupportTicketApp.Controllers
 {

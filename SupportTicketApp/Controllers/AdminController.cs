@@ -16,6 +16,7 @@ using iText.Kernel.Font;
 using iText.Commons.Actions.Contexts;
 using Microsoft.Extensions.Primitives;
 using iText.IO.Image;
+using SupportTicketApp.Context;
 
 
 namespace SupportTicketApp.Controllers

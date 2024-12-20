@@ -15,6 +15,7 @@ namespace SupportTicketApp.ViewModels
         public string Description { get; set; }
 
         public List<IFormFile> CommentImages { get; set; } = new List<IFormFile>();
+
     }
 }
 

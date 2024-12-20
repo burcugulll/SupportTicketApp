@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using SupportTicketApp.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using SupportTicketApp.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using SupportTicketApp.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 

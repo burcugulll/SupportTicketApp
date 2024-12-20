@@ -7,14 +7,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupportTicketApp.Context;
 
-
 #nullable disable
 
 namespace SupportTicketApp.Migrations
 {
     [DbContext(typeof(SupportTicketDbContext))]
-    [Migration("20241207191315_NewDB")]
-    partial class NewDB
+    [Migration("20241220062549_mig_update_ticketCommentTab")]
+    partial class mig_update_ticketCommentTab
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,15 +60,19 @@ namespace SupportTicketApp.Migrations
                     b.Property<int>("CommentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImagePath")
+                    b.Property<byte[]>("ImageData")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -92,15 +95,19 @@ namespace SupportTicketApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketImageId"));
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<byte[]>("ImageData")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -150,9 +157,14 @@ namespace SupportTicketApp.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("CommentId");
 
                     b.HasIndex("TicketId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("TicketInfoCommentTabs");
                 });
@@ -183,9 +195,6 @@ namespace SupportTicketApp.Migrations
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("TicketImageId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -307,13 +316,13 @@ namespace SupportTicketApp.Migrations
                     b.HasOne("SupportTicketApp.Models.TicketInfoTab", "TicketInfoTab")
                         .WithMany("TicketAssignments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
                         .WithMany("TicketAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TicketInfoTab");
@@ -351,7 +360,15 @@ namespace SupportTicketApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SupportTicketApp.Models.UserTab", "UserTab")
+                        .WithMany("TicketInfoCommentTabs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("TicketInfoTab");
+
+                    b.Navigation("UserTab");
                 });
 
             modelBuilder.Entity("SupportTicketApp.Models.TicketInfoTab", b =>
@@ -393,6 +410,8 @@ namespace SupportTicketApp.Migrations
             modelBuilder.Entity("SupportTicketApp.Models.UserTab", b =>
                 {
                     b.Navigation("TicketAssignments");
+
+                    b.Navigation("TicketInfoCommentTabs");
 
                     b.Navigation("TicketInfoTabs");
 

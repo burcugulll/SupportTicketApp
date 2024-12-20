@@ -8,12 +8,12 @@ namespace SupportTicketApp.Models
     {
         [Key]
         public int CommentId { get; set; }
-        public int TicketId { get; set; } //fk ticket
 
         [MaxLength(100)]
         public string Title { get; set; }
 
         public string Description { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? ModifiedDate { get; set; }
@@ -22,11 +22,15 @@ namespace SupportTicketApp.Models
 
         public bool Status { get; set; } = true;
 
+        [ForeignKey(nameof(UserTab))]
         public int UserId { get; set; }
+        public UserTab UserTab { get; set; }
 
+        public int TicketId { get; set; } //fk ticket
         public TicketInfoTab TicketInfoTab { get; set; } // Bire çok: Her yorum bir bilete ait
+
         public ICollection<TicketCommentImage?> TicketCommentImages { get; set; }
 
-        public UserTab UserTab { get; set; }
+        
     }
 }
