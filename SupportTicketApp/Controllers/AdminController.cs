@@ -18,6 +18,9 @@ using Microsoft.Extensions.Primitives;
 using iText.IO.Image;
 using SupportTicketApp.Context;
 using System.Security.Claims;
+using System.Net.Mail;
+using System.Net;
+using SupportTicketApp.Utils;
 
 
 namespace SupportTicketApp.Controllers
@@ -26,10 +29,15 @@ namespace SupportTicketApp.Controllers
     public class AdminController : Controller
     {
         private readonly SupportTicketDbContext _context;
-        public AdminController(SupportTicketDbContext context)
+        private readonly EmailService _emailService;
+
+        public AdminController(SupportTicketDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
+
+
         public IActionResult Index()
         {
             ViewData["Title"] = "Admin Paneli";
@@ -94,7 +102,6 @@ namespace SupportTicketApp.Controllers
             return View(tickets);
         }
 
-        // Devam Eden Biletler
         public async Task<IActionResult> OngoingTickets()
         {
             var tickets = await _context.TicketInfoTabs
@@ -108,7 +115,6 @@ namespace SupportTicketApp.Controllers
             return View(tickets); 
         }
 
-        // Atanmamış Biletler
         public async Task<IActionResult> UnassignedTickets()
         {
             var tickets = await _context.TicketInfoTabs
@@ -184,6 +190,7 @@ namespace SupportTicketApp.Controllers
 
             var ticket = await _context.TicketInfoTabs
                 .Include(t => t.TicketImages)
+                .Include(t => t.UserTab)
                 .SingleOrDefaultAsync(t => t.TicketId == ticketId);
 
             if (ticket == null)
@@ -238,6 +245,17 @@ namespace SupportTicketApp.Controllers
             }
 
             await _context.SaveChangesAsync();
+            // E-posta gönderimi
+            if (ticket.UserTab != null && !string.IsNullOrEmpty(ticket.UserTab.Email))
+            {
+                string subject = "Bilet Güncellemesi Bildirimi";
+                string body = $"Merhaba {ticket.UserTab.Name},\n\n" +
+                              $"\"{ticket.Title}\" başlıklı biletiniz güncellenmiştir. Yeni detayları görmek için sisteme giriş yapabilirsiniz.\n\n" +
+                              $"İyi günler dileriz.";
+
+                await _emailService.SendEmailAsync(ticket.UserTab.Email, subject, body);
+            }
+
             return RedirectToAction("TicketDetails", new { ticketId = ticket.TicketId });
         }
 
@@ -499,6 +517,7 @@ namespace SupportTicketApp.Controllers
 
             return RedirectToAction("TicketDetails", new { ticketId });
         }
+
     }
 }
     

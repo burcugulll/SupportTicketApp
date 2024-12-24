@@ -59,86 +59,93 @@ namespace SupportTicketApp.Controllers
                         return View();
                     }
 
-                var hashedPassword = user.HashPassword(model.Password);
-                if (user.Password == hashedPassword)
-                    {
+                 
+
+                    var hashedPassword = user.HashPassword(model.Password);
+                    if (user.Password == hashedPassword)
+                        {
+                            if (user.DeletedDate != null)
+                            {
+                                ViewBag.Message = "Pasif Kullanıcı !";
+                                return View();
+                            }
                         user.LoginAttempts = 0;
-                        user.LockoutEndTime = null;
+                            user.LockoutEndTime = null;
 
-                        var userLog = new UserLogTab
+                            var userLog = new UserLogTab
+                            {
+                                UserName = user.UserName,
+                                LogTime = DateTime.Now,
+                                UserId = user.UserId,
+                                IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                                Log = "Başarılı giriş"
+                            };
+                            _context.UserLogTabs.Add(userLog);
+                            _context.SaveChanges();
+                            var base64ProfilePhoto = user.ProfilePhoto != null ? Convert.ToBase64String(user.ProfilePhoto) : null;
+
+                            var claims = new List<Claim>
                         {
-                            UserName = user.UserName,
-                            LogTime = DateTime.Now,
-                            UserId = user.UserId,
-                            IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
-                            Log = "Başarılı giriş"
+                            new Claim(ClaimTypes.Name, user.UserName),
+                            new Claim(ClaimTypes.Role, user.UserType.ToString()) ,
+
+
                         };
-                        _context.UserLogTabs.Add(userLog);
-                        _context.SaveChanges();
-                        var base64ProfilePhoto = user.ProfilePhoto != null ? Convert.ToBase64String(user.ProfilePhoto) : null;
+                            // Profil fotoğrafını Claim'e ekle
+                            if (base64ProfilePhoto != null)
+                            {
+                                claims.Add(new Claim("ProfilePhoto", base64ProfilePhoto));
+                            }
 
-                        var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim(ClaimTypes.Role, user.UserType.ToString()) ,
+                            var claimsIdentity = new ClaimsIdentity(claims, "login");
 
-
-                    };
-                        // Profil fotoğrafını Claim'e ekle
-                        if (base64ProfilePhoto != null)
-                        {
-                            claims.Add(new Claim("ProfilePhoto", base64ProfilePhoto));
-                        }
-
-                        var claimsIdentity = new ClaimsIdentity(claims, "login");
-
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+                            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
 
-                        if (user.UserType == UserType.Yonetici)
-                        {
+                            if (user.UserType == UserType.Yonetici)
+                            {
 
-                            return RedirectToAction("Index", "Admin");
-                        }
-                        else if (user.UserType == UserType.Calisan)
-                        {
-                            return RedirectToAction("AssignedTickets", "Employee");
+                                return RedirectToAction("Index", "Admin");
+                            }
+                            else if (user.UserType == UserType.Calisan)
+                            {
+                                return RedirectToAction("AssignedTickets", "Employee");
 
+                            }
+                            else
+                            {
+                                return RedirectToAction("Index", "User");
+                            }
                         }
                         else
                         {
-                            return RedirectToAction("Index", "User");
+                            user.LoginAttempts++;
+                            var userLog = new UserLogTab
+                            {
+                                UserName = user.UserName,
+                                LogTime = DateTime.Now,
+                                UserId = user.UserId,
+                                IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                                Log = "Başarısız giriş"
+                            };
+                            _context.UserLogTabs.Add(userLog);
+                            _context.SaveChanges();
+                            if (user.LoginAttempts >= 3)
+                            {
+                                user.LockoutEndTime = DateTime.Now.AddMinutes(1);
+                                ViewBag.Message = "3 kez yanlış şifre girdiniz. 1 dakika boyunca giriş yapamazsınız.";
+                            }
+                            else
+                            {
+                                ViewBag.Message = $"Geçersiz kullanıcı adı veya şifre! {3 - user.LoginAttempts} hakkınız kaldı.";
+                            }
+                            _context.SaveChanges();
                         }
                     }
                     else
                     {
-                        user.LoginAttempts++;
-                        var userLog = new UserLogTab
-                        {
-                            UserName = user.UserName,
-                            LogTime = DateTime.Now,
-                            UserId = user.UserId,
-                            IPAdress = HttpContext.Connection.RemoteIpAddress.ToString(),
-                            Log = "Başarısız giriş"
-                        };
-                        _context.UserLogTabs.Add(userLog);
-                        _context.SaveChanges();
-                        if (user.LoginAttempts >= 3)
-                        {
-                            user.LockoutEndTime = DateTime.Now.AddMinutes(1);
-                            ViewBag.Message = "3 kez yanlış şifre girdiniz. 1 dakika boyunca giriş yapamazsınız.";
-                        }
-                        else
-                        {
-                            ViewBag.Message = $"Geçersiz kullanıcı adı veya şifre! {3 - user.LoginAttempts} hakkınız kaldı.";
-                        }
-                        _context.SaveChanges();
+                        ViewBag.Message = "Böyle bir kullanıcı veritabanında kayıtlı değil.";
                     }
-                }
-                else
-                {
-                    ViewBag.Message = "Böyle bir kullanıcı veritabanında kayıtlı değil.";
-                }
 
                 
             }

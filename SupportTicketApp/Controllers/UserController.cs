@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 using SupportTicketApp.Context;
 using SupportTicketApp.Models;
+using SupportTicketApp.Utils;
 using SupportTicketApp.ViewModels;
 using System.Net;
 using System.Net.Mail;
@@ -16,10 +17,14 @@ namespace SupportTicketApp.Controllers
     public class UserController : Controller
     {
         private readonly SupportTicketDbContext dbContext;
+        private readonly EmailService _emailService;
 
-        public UserController(SupportTicketDbContext context)
+
+        public UserController(SupportTicketDbContext context, EmailService emailService)
         {
             dbContext = context;
+            _emailService = emailService;
+
         }
 
         public async Task<IActionResult> Index()
@@ -148,7 +153,6 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("Index");
         }
 
-        // Edit Ticket
         [HttpGet]
         public async Task<IActionResult> EditTicket(int id)
         {
@@ -160,13 +164,19 @@ namespace SupportTicketApp.Controllers
             {
                 return NotFound();
             }
+            var assignedUser = await dbContext.TicketAssignments
+        .FirstOrDefaultAsync(ta => ta.TicketId == id);
+            bool canEdit = assignedUser == null;
+            // Eğer bilet atanmış bir personele sahipse, düzenlemeyi engelle
+            ViewBag.CanEdit = canEdit; // Düzenleme yapılabilir mi, bunu View'e gönderiyoruz
+            ViewBag.TicketId = ticket.TicketId;
 
             var model = new CreateTicketViewModel
             {
                 Title = ticket.Title,
                 Description = ticket.Description,
                 Urgency = ticket.Urgency,
-                TicketImages = null 
+                TicketImages = null
             };
 
             ViewBag.TicketImages = ticket.TicketImages;
@@ -185,6 +195,17 @@ namespace SupportTicketApp.Controllers
             if (ticket == null)
             {
                 return NotFound();
+            }
+            var currentUserName = User.Identity.Name;
+            var currentUser = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == currentUserName);
+            var assignedUser = await dbContext.TicketAssignments
+            .FirstOrDefaultAsync(ta => ta.TicketId == id);
+            // Eğer bilet atanmış bir kullanıcıya sahipse, düzenlemeyi engelle
+            if (assignedUser != null)
+            {
+                ViewData["ErrorMessage"] = "Bu bilet bir personele atanmış, düzenlenemez.";
+                return View(); // Hata mesajını View'de göstereceğiz
+                //return View("Error", new { message = "Bu bilet bir personele atanmış, düzenlenemez." });
             }
 
             ticket.Title = model.Title;
@@ -233,83 +254,83 @@ namespace SupportTicketApp.Controllers
                 dbContext.TicketImages.UpdateRange(imagesToDelete);  // Güncelleme işlemi, sadece durumu pasif yap
             }
 
-
             await dbContext.SaveChangesAsync();
             return RedirectToAction("Index", "User");
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(int ticketId, string comment)
+        public async Task<IActionResult> CreateComment(CreateCommentViewModel model)
         {
             var ticket = await dbContext.TicketInfoTabs
-                .Include(t => t.TicketInfoCommentTabs)
-                .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+                  .Include(t => t.UserTab) // UserTab'ı yükle
+                  .Include(t => t.TicketAssignments) // Atanmış personel bilgilerini yükle
+                .SingleOrDefaultAsync(t => t.TicketId == model.TicketId);
 
             if (ticket == null)
             {
-                return NotFound("Bilet bulunamadı.");
+                return NotFound();
             }
 
-            var newComment = new TicketInfoCommentTab
+            var currentUserName = User.Identity.Name;
+            var currentUser = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == currentUserName);
+
+            var comment = new TicketInfoCommentTab
             {
-                TicketId = ticketId,
-                Description = comment,
-                CreatedDate = DateTime.Now
+                TicketId = ticket.TicketId,
+                Title = model.CommentTitle,
+                Description = model.CommentDescription,
+                CreatedDate = DateTime.Now,
+                UserId = currentUser.UserId
             };
 
-            ticket.TicketInfoCommentTabs.Add(newComment);
-            // Send email notification to assigned personnel if applicable
-            foreach (var assignment in ticket.TicketAssignments)
+            dbContext.TicketInfoCommentTabs.Add(comment);
+            await dbContext.SaveChangesAsync();
+
+            // Save comment images
+            if (model.CommentImages != null && model.CommentImages.Count > 0)
             {
-                var userEmail = dbContext.UserTabs.SingleOrDefault(u => u.UserId == assignment.UserId)?.Email;
-                if (userEmail != null)
+                foreach (var file in model.CommentImages)
                 {
-                    SendEmail(userEmail, "Yeni Bir Yorum Eklendi", "Biletinize yeni bir yorum eklendi.");
+                    var commentImage = new TicketCommentImage();
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
+                        commentImage.ImageData = memoryStream.ToArray();
+                        commentImage.ContentType = file.ContentType;
+                        commentImage.CommentId = comment.CommentId;
+                    }
+
+                    dbContext.TicketCommentImages.Add(commentImage);
                 }
             }
 
-            return RedirectToAction("Details", new { id = ticketId });
-        }
-
-        private void SendEmail(string to, string subject, string body)
-        {
-            try
+            await dbContext.SaveChangesAsync();
+            // Atanmış personellere e-posta gönderimi
+            foreach (var assignment in ticket.TicketAssignments)
             {
-                // SMTP sunucusu ayarları
-                var smtpClient = new SmtpClient("smtp.yourmailserver.com")
+                var assignedUser = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserId == assignment.UserId);
+                if (assignedUser != null && !string.IsNullOrEmpty(assignedUser.Email))
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential("your-email@example.com", "your-password"),
-                    EnableSsl = true,
-                };
+                    try
+                    {
+                        string subject = "Yeni Yorum Bildirimi";
+                        string body = $"Merhaba {assignedUser.Name},\n\n" +
+                                      $"\"{ticket.Title}\" başlıklı biletinize yeni bir yorum eklenmiştir. Yeni detayları görmek için sisteme giriş yapabilirsiniz.\n\n" +
+                                      $"İyi günler dileriz.";
 
-                // E-posta mesajı
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress("your-email@example.com"),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true,
-                };
-                mailMessage.To.Add(to);
-
-                // SMTP üzerinden e-posta gönderimi
-                smtpClient.Send(mailMessage);
+                        await _emailService.SendEmailAsync(assignedUser.Email, subject, body);
+                        Console.WriteLine($"Atanmış personele e-posta başarıyla gönderildi: {assignedUser.Email}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"E-posta gönderimi sırasında bir hata oluştu: {ex.Message}");
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                // Hata durumunda loglama veya hata mesajı göstermek için buraya kod yazabilirsiniz
-                Console.WriteLine($"E-posta gönderme hatası: {ex.Message}");
-            }
+            return RedirectToAction("EditTicket", new { id = model.TicketId });
         }
 
-        //  Giriş yapan kullanıcının ID'sini almak
-        private int GetCurrentUserId()
-        {
-            // Burada, giriş yapan kullanıcının ID'sini almak için ilgili yöntemi kullanılmalı
-            //  kullanıcıyı Identity üzerinden alsak
-            return 1; // Örnek olarak 1 döndürülüyor
-        }
+
     }
 }

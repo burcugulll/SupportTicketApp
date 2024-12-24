@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using iText.Commons.Actions.Contexts;
 using SupportTicketApp.ViewModels;
 using SupportTicketApp.Context;
+using SupportTicketApp.Utils;
 
 namespace SupportTicketApp.Controllers
 {
@@ -25,11 +26,15 @@ namespace SupportTicketApp.Controllers
     public class EmployeeController : Controller
     {
         private readonly SupportTicketDbContext _context;
+        private readonly EmailService _emailService;
 
 
-        public EmployeeController(SupportTicketDbContext context)
+
+        public EmployeeController(SupportTicketDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
+
 
         }
 
@@ -103,14 +108,36 @@ namespace SupportTicketApp.Controllers
 
         //    return RedirectToAction("AssignedTickets"); // İşlem tamamlandıktan sonra sayfayı yenile
         //}
-        
+
         [HttpGet]
-        public IActionResult AddComment(int ticketId)
+        public async Task<IActionResult> AddComment(int ticketId)
         {
             ViewBag.TicketId = ticketId;
 
+            // Kullanıcının yorumlarını alıyoruz
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(userName))
+            {
+                return RedirectToAction("Login", "Account"); // Kullanıcı oturum açmamışsa login sayfasına yönlendir
+            }
+
+            var user = await _context.UserTabs.FirstOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account"); // Kullanıcı bulunamadıysa login sayfasına yönlendir
+            }
+
+            // Çalışanın yazdığı yorumları alıyoruz
+            var comments = await _context.TicketInfoCommentTabs
+                                          .Where(c => c.UserId == user.UserId && c.TicketId == ticketId)
+                                          .ToListAsync();
+
+            // Yorumları View'e gönderiyoruz
+            ViewBag.Comments = comments;
+
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> AddComment(CommentViewModel model)
@@ -130,7 +157,9 @@ namespace SupportTicketApp.Controllers
             var userId = user.UserId;
             
             int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
-            var ticket = await _context.TicketInfoTabs.FirstOrDefaultAsync(t => t.TicketId == ticketId);
+            var ticket = await _context.TicketInfoTabs
+                               .Include(t => t.UserTab) // UserTab'ı yükle
+                               .FirstOrDefaultAsync(t => t.TicketId == ticketId);
             if (ticket == null)
             {
                 ModelState.AddModelError("", "Ticket bulunamadı.");
@@ -174,13 +203,26 @@ namespace SupportTicketApp.Controllers
 
                 await _context.SaveChangesAsync();
             }
+            // E-posta gönderimi: Biletin sahibi olan kullanıcıya bildirim gönder
+            if (ticket.UserTab != null && !string.IsNullOrEmpty(ticket.UserTab.Email))
+            {
+                try
+                {
+                    string subject = "Bilet Güncellemesi Bildirimi";
+                    string body = $"Merhaba {ticket.UserTab.Name},\n\n" +
+                                  $"\"{ticket.Title}\" başlıklı biletiniz güncellenmiştir. Yeni detayları görmek için sisteme giriş yapabilirsiniz.\n\n" +
+                                  $"İyi günler dileriz.";
 
+                    await _emailService.SendEmailAsync(ticket.UserTab.Email, subject, body);
+                    Console.WriteLine("E-posta başarıyla gönderildi.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"E-posta gönderimi sırasında bir hata oluştu: {ex.Message}");
+                }
+            }
             return RedirectToAction("AssignedTickets", "Employee", new { id = ticketId });
         }
-
-
-
-
 
         public IActionResult ExportToPdf(int ticketId)
         {

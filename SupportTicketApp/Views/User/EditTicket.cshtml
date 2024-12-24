@@ -1,20 +1,47 @@
 ﻿ @model SupportTicketApp.ViewModels.CreateTicketViewModel
+<style>
+    /* Disabled form elemanları için stil */
+    .form-control:disabled {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
 
+    /* Label'lar için disabled stil */
+    .disabled-label {
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
+@{
+    var errorMessage = ViewData["ErrorMessage"] as string;
+}
 <h1>Bilet Düzenle</h1>
+@* @if (ViewBag.CanEdit == false)
+{
+    <div class="alert alert-warning">
+        <strong>Uyarı:</strong> Bu bilet bir personele atanmış, düzenlenemez.
+    </div>
+} *@
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-warning">
+        <strong>Uyarı:</strong> @errorMessage
+    </div>
+}
+<form asp-action="@(ViewBag.CanEdit == false ? "CreateComment" : "EditTicket")" method="post" enctype="multipart/form-data">
+    <input type="hidden" id="TicketId" name="TicketId" value="@ViewBag.TicketId" />
+    <div class="form-group">
+        <label for="Title" class="@(ViewBag.CanEdit == false ? "disabled-label" : "")">Başlık</label>
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" @(ViewBag.CanEdit ? "" : "disabled") required />
+    </div>
 
-<form asp-action="EditTicket" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="TicketId" value="@ViewBag.TicketId" />
     <div class="form-group">
-        <label for="Title">Başlık</label>
-        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+        <label for="Description" class="@(ViewBag.CanEdit == false ? "disabled-label" : "")">Açıklama</label>
+        <textarea class="form-control" id="Description" name="Description" @(ViewBag.CanEdit ? "" : "disabled") required>@Model.Description</textarea>
     </div>
     <div class="form-group">
-        <label for="Description">Açıklama</label>
-        <textarea class="form-control" id="Description" name="Description" required>@Model.Description</textarea>
-    </div>
-    <div class="form-group">
-        <label for="Urgency">Aciliyet</label>
-        <select class="form-control" id="Urgency" name="Urgency">
+        <label for="Urgency" class="@(ViewBag.CanEdit == false ? "disabled-label" : "")">Aciliyet</label>
+        <select class="form-control" id="Urgency" name="Urgency" @(ViewBag.CanEdit ? "" : "disabled")>
             <option value="0">Düşük</option>
             <option value="1">Orta</option>
             <option value="2">Yüksek</option>
@@ -43,9 +70,40 @@
             }
         </div>
     </div>
+    @if (ViewBag.CanEdit == true)
+    {
+        <div class="form-group">
+            <label for="NewImages">Yeni Fotoğraflar Yükle</label>
+            <input type="file" class="form-control" id="NewImages" name="TicketImages" multiple />
+        </div>
+    }
+
+    @if (ViewBag.CanEdit == true)
+    {
+        <button type="submit" class="btn btn-primary">Güncelle</button>
+    }
+
+    
+    
+
+</form>
+
+<form asp-action="CreateComment" method="post" enctype="multipart/form-data">
+    <h3>Yorum Ekle</h3>
+    <input type="hidden" id="TicketId" name="TicketId" value="@ViewBag.TicketId" />
+
     <div class="form-group">
-        <label for="NewImages">Yeni Fotoğraflar Yükle</label>
-        <input type="file" class="form-control" id="NewImages" name="TicketImages" multiple />
+        <label for="CommentTitle">Yorum Başlığı</label>
+        <input type="text" class="form-control" id="CommentTitle" name="CommentTitle" required />
     </div>
-    <button type="submit" class="btn btn-primary">Güncelle</button>
+    <div class="form-group">
+        <label for="CommentDescription">Yorum Açıklaması</label>
+        <textarea class="form-control" id="CommentDescription" name="CommentDescription" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="CommentImages">Fotoğraf Ekle (Opsiyonel)</label>
+        <input type="file" name="CommentImages" class="form-control" multiple />
+    </div>
+    <button type="submit" class="btn btn-primary">Yorum Gönder</button>
+
 </form>

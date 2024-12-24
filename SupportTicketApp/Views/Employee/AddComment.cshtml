@@ -8,7 +8,7 @@
 
 }
 
-<h2>Add Comment</h2>
+<h2>Yorum Ekle</h2>
 
 @using (Html.BeginForm("AddComment", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
@@ -16,21 +16,40 @@
     @Html.Hidden("TicketId", ticketId)
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Title)
+        @Html.LabelFor(model => model.Title,"Başlık")
         @Html.TextBoxFor(model => model.Title, new { @class = "form-control" })
         @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Description)
+        @Html.LabelFor(model => model.Description,"Açıklama")
         @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 5 })
         @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        <label for="CommentImages">Attach Images (Optional)</label>
+        <label for="CommentImages">Resim Ekle (Opsiyonel)</label>
         <input type="file" name="CommentImages" class="form-control" multiple />
     </div>
 
-    <button type="submit" class="btn btn-primary">Submit Comment</button>
+    <button type="submit" class="btn btn-primary">Yorumu Gönder</button>
 }
+<h3>Yorumlarım</h3>
+<div class="comment-list">
+    @if (ViewBag.Comments != null && ViewBag.Comments.Count > 0)
+    {
+        <ul class="list-group">
+            @foreach (var comment in ViewBag.Comments)
+            {
+                <li class="list-group-item">
+                    <strong>@comment.Title</strong><br />
+                    <p>@comment.Description</p>
+                    <small>Yorum Tarihi: @comment.CreatedDate</small>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Henüz yorumunuz yok.</p>
+    }

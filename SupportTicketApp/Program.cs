@@ -6,11 +6,15 @@ using SupportTicketApp.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using SupportTicketApp.Context;
+using SupportTicketApp.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// EmailService sýnýfýný DI container'ýna ekliyoruz
+builder.Services.AddTransient<EmailService>();
 
 builder.Services.AddDbContext<SupportTicketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Baðlantý dizesi ismi
