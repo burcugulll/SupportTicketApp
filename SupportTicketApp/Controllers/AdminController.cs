@@ -85,10 +85,10 @@ namespace SupportTicketApp.Controllers
         public async Task<IActionResult> AllTickets()
         {
             var tickets = await _context.TicketInfoTabs
-                .Include(t => t.UserTab) // Kullanıcı bilgilerini dahil et
-                .Include(t => t.TicketImages) // Fotoğrafları dahil et
-                .Include(t => t.TicketInfoCommentTabs) // Yorumları dahil et
-                    .ThenInclude(c => c.TicketCommentImages) // Yorumların fotoğraflarını dahil et
+                .Include(t => t.UserTab) 
+                .Include(t => t.TicketImages) 
+                .Include(t => t.TicketInfoCommentTabs) 
+                    .ThenInclude(c => c.TicketCommentImages) 
                 .ToListAsync();
 
             return View(tickets);

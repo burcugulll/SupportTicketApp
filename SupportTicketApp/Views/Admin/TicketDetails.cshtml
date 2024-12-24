@@ -43,9 +43,9 @@
             <tr>
                 <th>Resim</th>
                 <td>
-                    @if (Model.TicketImages != null && Model.TicketImages.Any())
+                    @if (Model.TicketImages != null && Model.TicketImages.Any(img => img.Status))
                     {
-                        foreach (var image in Model.TicketImages)
+                        foreach (var image in Model.TicketImages.Where(img => img.Status))
                         {
                             <img src="data:@image.ContentType;base64,@Convert.ToBase64String(image.ImageData)"
                                  alt="Resim" style="width: 50px; margin-right: 5px;" />
@@ -55,6 +55,7 @@
                     {
                         <span>Resim yok</span>
                     }
+
                 </td>
             </tr>
 

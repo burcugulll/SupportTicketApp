@@ -25,7 +25,7 @@
                 <td>@(ticket.UserTab?.Name ?? "Atanmamış")</td>
                 <td>@ticket.CreatedDate.ToShortDateString()</td>
                 <td>
-                    @if (ticket.TicketImages != null && ticket.TicketImages.Any())
+                    @if (ticket.TicketImages != null && ticket.TicketImages.Any(img => img.Status))
                     {
                         <span>Resim var</span>
                     }
@@ -34,6 +34,7 @@
                         <span>Resim yok</span>
                     }
                 </td>
+
                 <td>
                     @if (ticket.IsCompleted)
                     {
