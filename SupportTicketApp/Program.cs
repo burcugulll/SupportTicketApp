@@ -9,6 +9,14 @@ using SupportTicketApp.Context;
 using SupportTicketApp.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+// Session
+builder.Services.AddDistributedMemoryCache();  // Oturum verilerini bellekte saklar
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);  // Oturum süresi
+    options.Cookie.HttpOnly = true;  // Güvenlik için HttpOnly 
+    options.Cookie.IsEssential = true;  // Çerez her durumda kullanýlabilir olmalý
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -23,6 +31,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             {
                 options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
+                options.Cookie.HttpOnly = true;  // HttpOnly ile çerezin JavaScript'ten eriþilmesi engellenir.
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;  // HTTPS üzerinden gönderilmesi saðlanýr.
+                options.SlidingExpiration = true;  // Kullanýcý etkinlik gösterirse çerez süresi yenilenir.
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Oturumun süresi 30 dakika.
+                options.LogoutPath = "/Account/Logout"; // Çýkýþ
+                options.Cookie.IsEssential = true;  // Çerez oturum çerezi olur ve tarayýcý kapandýðýnda silinir.
+                options.Cookie.MaxAge = null;  // Ensure it doesn't persist (i.e., expires with the browser session).
             });
 var app = builder.Build();
 
@@ -56,6 +71,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();  // Session kullanýmýný etkinleþtirme
 
 app.UseRouting();
 app.UseAuthentication();

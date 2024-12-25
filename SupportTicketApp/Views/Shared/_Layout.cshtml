@@ -16,10 +16,6 @@
 <body>
     @{
         ViewData["Title"] = "Profil Ayarları";
-        
-
-        // var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string; 
-
     }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -38,10 +34,6 @@
 
                             var userTypeClaim = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
                             UserType? userType = userTypeClaim != null ? Enum.Parse<UserType>(userTypeClaim.Value) : null;
-                            // Profil fotoğrafı
-
-@*                             var profilePhotoBase64 = ViewBag.ProfilePhotoBase64 as string;
- *@
                             <li class="nav-item ms-auto">
                                 <div class="d-flex align-items-center">
                                     <a asp-area="" asp-controller="Home" asp-action="Settings" class="d-flex align-items-center">
@@ -117,13 +109,17 @@
             &copy; 2024 - SupportTicketApp
         </div>
     </footer>
-    @* <script>
-        var profilePhotoBase64 = '@profilePhotoBase64';
-        if (profilePhotoBase64) {
-            var profileImage = document.querySelector('img[alt="Profil Fotoğrafı"]');
-            profileImage.src = 'data:image/png;base64,' + profilePhotoBase64;
-        }
-    </script> *@
+    <!-- Otomatik çıkış yap -->
+    <script>
+        window.onbeforeunload = function() {
+            fetch('/Account/Logout', { method: 'POST' })
+                .then(() => {
+                    // Çıkış yapıldığında çerezleri temizle
+                    document.cookie = "ASP.NET_SessionId=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                    document.cookie = ".AspNetCore.Cookies=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                });
+        };
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

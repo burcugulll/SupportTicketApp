@@ -16,7 +16,6 @@ namespace SupportTicketApp.ViewModels
         public string Password { get; set; }
 
         public string Name { get; set; }
-        //public IFormFile ProfilePhoto { get; set; }
         public UserType UserType { get; set; }
     }
 }

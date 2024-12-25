@@ -45,7 +45,6 @@ namespace SupportTicketApp.Controllers
             return View(tickets);
         }
 
-        // Yeni bilet oluşturma
         [HttpGet]
         public IActionResult CreateTicket()
         {
@@ -79,7 +78,6 @@ namespace SupportTicketApp.Controllers
 
                 var newTicketImages = new List<TicketImage>();
 
-                // Dosya ekleniyorsa
                 if (model.TicketImages != null && model.TicketImages.Any())
                 {
                     foreach (var image in model.TicketImages)
@@ -107,9 +105,6 @@ namespace SupportTicketApp.Controllers
                 }
                 dbContext.TicketImages.AddRange(newTicketImages);
                 await dbContext.SaveChangesAsync();
-
-                //SendEmail(user.Email, "Yeni Bilet Oluşturdunuz", "Yeni bir destek bileti oluşturduğunuz için teşekkür ederiz.");
-
                 return RedirectToAction("Index", "User");
             }
             catch (Exception ex)
@@ -120,7 +115,6 @@ namespace SupportTicketApp.Controllers
             return View(model);
         }
 
-        // Destek biletlerinin listelenmesi
         public IActionResult TicketList()
         {
             var userId = int.Parse(User.Identity.Name); 
@@ -158,6 +152,7 @@ namespace SupportTicketApp.Controllers
         {
             var ticket = await dbContext.TicketInfoTabs
                 .Include(t => t.TicketImages)
+                .Include(t => t.TicketInfoCommentTabs) // Yorumları dahil et
                 .SingleOrDefaultAsync(t => t.TicketId == id);
 
             if (ticket == null)
@@ -167,8 +162,7 @@ namespace SupportTicketApp.Controllers
             var assignedUser = await dbContext.TicketAssignments
         .FirstOrDefaultAsync(ta => ta.TicketId == id);
             bool canEdit = assignedUser == null;
-            // Eğer bilet atanmış bir personele sahipse, düzenlemeyi engelle
-            ViewBag.CanEdit = canEdit; // Düzenleme yapılabilir mi, bunu View'e gönderiyoruz
+            ViewBag.CanEdit = canEdit; 
             ViewBag.TicketId = ticket.TicketId;
 
             var model = new CreateTicketViewModel
@@ -180,6 +174,7 @@ namespace SupportTicketApp.Controllers
             };
 
             ViewBag.TicketImages = ticket.TicketImages;
+            ViewBag.Comments = ticket.TicketInfoCommentTabs; // Yorumları view'e taşıyoruz
 
             return View(model);
         }
@@ -200,19 +195,16 @@ namespace SupportTicketApp.Controllers
             var currentUser = await dbContext.UserTabs.SingleOrDefaultAsync(u => u.UserName == currentUserName);
             var assignedUser = await dbContext.TicketAssignments
             .FirstOrDefaultAsync(ta => ta.TicketId == id);
-            // Eğer bilet atanmış bir kullanıcıya sahipse, düzenlemeyi engelle
             if (assignedUser != null)
             {
-                ViewData["ErrorMessage"] = "Bu bilet bir personele atanmış, düzenlenemez.";
-                return View(); // Hata mesajını View'de göstereceğiz
-                //return View("Error", new { message = "Bu bilet bir personele atanmış, düzenlenemez." });
+                TempData["ErrorMessage"] = "Bu bilet bir personele atanmış, düzenlenemez.";
+                return View(); 
             }
 
             ticket.Title = model.Title;
             ticket.Description = model.Description;
             ticket.Urgency = model.Urgency;
 
-            // Yeni resimler ekle
             if (model.TicketImages != null && model.TicketImages.Any())
             {
                 foreach (var image in model.TicketImages)
@@ -232,7 +224,6 @@ namespace SupportTicketApp.Controllers
                 }
             }
 
-            // Mevcut resimlerden silme işlemi(soft delete)
             if (!StringValues.IsNullOrEmpty(Request.Form["DeletedImageIds"]))
             {
                 var deletedImageIds = Request.Form["DeletedImageIds"]
@@ -251,20 +242,20 @@ namespace SupportTicketApp.Controllers
                     img.DeletedDate = DateTime.Now;  
                 }
 
-                dbContext.TicketImages.UpdateRange(imagesToDelete);  // Güncelleme işlemi, sadece durumu pasif yap
+                dbContext.TicketImages.UpdateRange(imagesToDelete);  
             }
 
             await dbContext.SaveChangesAsync();
-            return RedirectToAction("Index", "User");
+            TempData["SuccessMessage"] = "Bilet başarıyla güncellendi.";
+            return RedirectToAction("EditTicket", new { id = ticket.TicketId });
         }
-
 
         [HttpPost]
         public async Task<IActionResult> CreateComment(CreateCommentViewModel model)
         {
             var ticket = await dbContext.TicketInfoTabs
-                  .Include(t => t.UserTab) // UserTab'ı yükle
-                  .Include(t => t.TicketAssignments) // Atanmış personel bilgilerini yükle
+                  .Include(t => t.UserTab) 
+                  .Include(t => t.TicketAssignments) 
                 .SingleOrDefaultAsync(t => t.TicketId == model.TicketId);
 
             if (ticket == null)
@@ -287,7 +278,6 @@ namespace SupportTicketApp.Controllers
             dbContext.TicketInfoCommentTabs.Add(comment);
             await dbContext.SaveChangesAsync();
 
-            // Save comment images
             if (model.CommentImages != null && model.CommentImages.Count > 0)
             {
                 foreach (var file in model.CommentImages)
@@ -328,6 +318,7 @@ namespace SupportTicketApp.Controllers
                     }
                 }
             }
+            TempData["SuccessMessage"] = "Yorum başarıyla eklendi.";
             return RedirectToAction("EditTicket", new { id = model.TicketId });
         }
 

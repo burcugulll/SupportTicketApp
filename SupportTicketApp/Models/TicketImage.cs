@@ -8,7 +8,7 @@ namespace SupportTicketApp.Models
         [Key]
         public int TicketImageId { get; set; }
 
-        public byte[] ImageData { get; set; } // Gelişmiş dosya yükleme için byte array tipi
+        public byte[] ImageData { get; set; } 
         public string ContentType { get; set; } // İçeriğin MIME tipi (örneğin, "image/jpeg")
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 

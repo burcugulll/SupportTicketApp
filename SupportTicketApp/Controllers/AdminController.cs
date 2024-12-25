@@ -176,7 +176,7 @@ namespace SupportTicketApp.Controllers
                 Urgency = ticket.Urgency,
                 TicketImages = null
             };
-            ViewBag.TicketId = ticket.TicketId; // TicketId ViewBag üzerinden taşınıyor.
+            ViewBag.TicketId = ticket.TicketId; 
 
             ViewBag.TicketImages = ticket.TicketImages;
 
@@ -202,7 +202,6 @@ namespace SupportTicketApp.Controllers
             ticket.Description = model.Description;
             ticket.Urgency = model.Urgency;
 
-            // Add new images
             if (model.TicketImages != null && model.TicketImages.Any())
             {
                 foreach (var image in model.TicketImages)
@@ -237,11 +236,11 @@ namespace SupportTicketApp.Controllers
 
                 foreach (var img in imagesToDelete)
                 {
-                    img.Status = false;  // Mark image as inactive
-                    img.DeletedDate = DateTime.Now;  // Update deletion date
+                    img.Status = false;  
+                    img.DeletedDate = DateTime.Now;  
                 }
 
-                _context.TicketImages.UpdateRange(imagesToDelete);  // Update status to inactive
+                _context.TicketImages.UpdateRange(imagesToDelete);  
             }
 
             await _context.SaveChangesAsync();
@@ -297,7 +296,6 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction(nameof(UserManagement));
         }
 
-        // Bilet Sil 
         public async Task<IActionResult> DeleteTicket(int ticketId)
         {
             var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
@@ -324,28 +322,22 @@ namespace SupportTicketApp.Controllers
 
         public async Task<IActionResult> CompleteTicket(int ticketId)
         {
-            // Bileti veritabanından bul
             var ticket = await _context.TicketInfoTabs.FindAsync(ticketId);
             if (ticket == null)
             {
-                return NotFound(); // Eğer bilet bulunmazsa, hata döndür
+                return NotFound(); 
             }
 
-            // Biletin durumunu 'Tamamlandı' olarak işaretle
             ticket.IsCompleted = true;
 
-            //ticket.Status = false; // OngoingTickets'ten silmek için Status değerini false yapıyoruz
-            await _context.SaveChangesAsync(); // Değişiklikleri kaydet
+            await _context.SaveChangesAsync(); 
 
-            // Biletin bağlı olduğu kullanıcı var mı?
             if (ticket.UserTab == null)
             {
-                // Eğer biletin atanmış kullanıcısı yoksa, 'UnassignedTickets' sayfasına yönlendir
                 return RedirectToAction(nameof(UnassignedTickets));
             }
             else
             {
-                // Bilet tamamlandığı için artık OngoingTickets'te görünmemeli
                 return RedirectToAction(nameof(OngoingTickets));
             }
         }
@@ -358,10 +350,6 @@ namespace SupportTicketApp.Controllers
                 TempData["ErrorMessage"] = "Herhangi bir bilet seçilmedi.";
                 return RedirectToAction("AllTickets");
             }
-
-            /*var tickets = await _context.TicketInfoTabs
-                .Where(t => ticketIds.Any(id => id == t.TicketId))
-                .ToListAsync();*/
 
             var ticketIdParams = ticketIds.Select((id, index) => new { Id = id, ParamName = $"@p{index}" }).ToList();
             
@@ -412,7 +400,6 @@ namespace SupportTicketApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("AllTickets"); 
 
-            //return RedirectToAction("OngoingTickets", "Admin");
         }
 
 

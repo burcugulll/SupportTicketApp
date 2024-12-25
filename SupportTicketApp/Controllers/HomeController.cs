@@ -108,28 +108,21 @@ namespace SupportTicketApp.Controllers
 
                 TempData["SuccessMessage"] = "Profil baþarýyla güncellendi.";
                 var base64ProfilePhoto = Convert.ToBase64String(user.ProfilePhoto);
-                //ViewBag.ProfilePhotoBase64 = base64ProfilePhoto;
                 TempData["ProfilePhotoBase64"] = base64ProfilePhoto;
-                // Claims'i güncelleme
                 if (profilePhotoBytes != null)
                 {
-                    // Kullanýcýyý al ve claims güncelle
                     var identity = (ClaimsIdentity)User.Identity;
                     var profilePhotoClaim = identity.FindFirst("ProfilePhoto");
 
                     if (profilePhotoClaim != null)
                     {
-                        // Eski claim'i kaldýr
                         identity.RemoveClaim(profilePhotoClaim);
                     }
 
-                    // Yeni profile photo claim'i ekle
                     identity.AddClaim(new Claim("ProfilePhoto", base64ProfilePhoto));
 
-                    // Claims'i yeniden oluþtur
                     var principal = new ClaimsPrincipal(identity);
 
-                    // Oturumu güncelle
                     await HttpContext.SignInAsync(principal);
                 }
             }

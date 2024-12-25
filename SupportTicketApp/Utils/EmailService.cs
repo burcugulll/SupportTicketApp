@@ -34,7 +34,6 @@ namespace SupportTicketApp.Utils
             }
             catch (Exception ex)
             {
-                // Loglama yapılabilir
                 Console.WriteLine($"E-posta gönderimi sırasında bir hata oluştu: {ex.Message}");
             }
         }

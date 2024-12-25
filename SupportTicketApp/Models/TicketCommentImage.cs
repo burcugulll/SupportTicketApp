@@ -6,7 +6,7 @@ namespace SupportTicketApp.Models
     {
         [Key]
         public int CommentImageId { get; set; }
-        public byte[] ImageData { get; set; } // Gelişmiş dosya yükleme için byte array tipi
+        public byte[] ImageData { get; set; } 
         public string ContentType { get; set; } // İçeriğin MIME tipi (örneğin, "image/jpeg")
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
@@ -14,7 +14,7 @@ namespace SupportTicketApp.Models
 
         public DateTime? DeletedDate { get; set; }
         public bool Status { get; set; } = true;
-        public int CommentId { get; set; }  // Bu satır eklendi
+        public int CommentId { get; set; }  
 
 
         // Navigation properties

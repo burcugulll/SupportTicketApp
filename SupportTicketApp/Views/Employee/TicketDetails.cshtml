@@ -1,37 +1,4 @@
-﻿@* @model SupportTicketApp.Models.TicketInfoTab
-
-<div class="container">
-    <h2>@Model.Title</h2>
-    <p>@Model.Description</p>
-    <p><strong>Öncelik:</strong> @Model.Urgency</p>
-    <p><strong>Oluşturulma Tarihi:</strong> @Model.CreatedDate.ToString("dd/MM/yyyy")</p>
-
-    <h3>Yorumlar</h3>
-    <ul>
-        @foreach (var comment in Model.Comments)
-        {
-            <li>
-                <strong>@comment.Title</strong>: @comment.Description
-                <span class="text-muted">(@comment.CreatedDate.ToString("dd/MM/yyyy"))</span>
-            </li>
-        }
-    </ul>
-
-    <form asp-action="AddComment" method="post">
-        <input type="hidden" name="TicketId" value="@Model.TicketId" />
-        <div class="form-group">
-            <label for="Title">Yorum Başlığı</label>
-            <input type="text" name="Title" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label for="Description">Yorum</label>
-            <textarea name="Description" class="form-control"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Yorumu Gönder</button>
-    </form>
-</div>
- *@
- @model SupportTicketApp.Models.TicketInfoTab
+﻿@model SupportTicketApp.Models.TicketInfoTab
 
 <div class="container">
     <h2>@Model.Title</h2>
@@ -86,7 +53,6 @@
 </div>
 
 <script>
-    // Eğer hata mesajı varsa, formu resetleyin
     if (@TempData["ErrorMessage"] != null) {
         setTimeout(function() {
             document.querySelector('form').reset();

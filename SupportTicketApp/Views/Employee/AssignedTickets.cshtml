@@ -64,13 +64,9 @@
                         }
                     </td>
                     <td>
-                        <a asp-controller="Employee" asp-action="AddComment" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
+                        <a asp-controller="Employee" asp-action="AddComment" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>                    
+                        <a asp-controller="Employee" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
 
-                        
-@*                         <a href="@Url.Action("AddComment", "Employee", new { ticketId = ticket.TicketId })" class="btn btn-info">Detay</a>
- *@                        <a asp-controller="Employee" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
-@*                         <a href="@Url.Action("AddComment", "Employee", new { action = "AddComment", ticketId = ticket.TicketId })" class="btn btn-info">Detay</a>
- *@
 
                     </td>
                 </tr>

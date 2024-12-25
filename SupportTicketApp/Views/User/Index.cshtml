@@ -32,7 +32,6 @@
                 <td>
                      @if (ticket.Status == true)  
                     {
-                        @* Düzenle ve Sil butonları yalnızca silinmemiş biletler için görünsün *@
                         @if (ticket.TicketAssignments == null || !ticket.TicketAssignments.Any())
                         {
                             <a href="@Url.Action("EditTicket", "User", new { id = ticket.TicketId })" class="btn btn-warning">Düzenle</a>

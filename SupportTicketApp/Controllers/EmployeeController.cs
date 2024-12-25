@@ -114,25 +114,22 @@ namespace SupportTicketApp.Controllers
         {
             ViewBag.TicketId = ticketId;
 
-            // Kullanıcının yorumlarını alıyoruz
             var userName = User.FindFirstValue(ClaimTypes.Name);
             if (string.IsNullOrEmpty(userName))
             {
-                return RedirectToAction("Login", "Account"); // Kullanıcı oturum açmamışsa login sayfasına yönlendir
+                return RedirectToAction("Login", "Account");
             }
 
             var user = await _context.UserTabs.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
             {
-                return RedirectToAction("Login", "Account"); // Kullanıcı bulunamadıysa login sayfasına yönlendir
+                return RedirectToAction("Login", "Account"); 
             }
 
-            // Çalışanın yazdığı yorumları alıyoruz
             var comments = await _context.TicketInfoCommentTabs
                                           .Where(c => c.UserId == user.UserId && c.TicketId == ticketId)
                                           .ToListAsync();
 
-            // Yorumları View'e gönderiyoruz
             ViewBag.Comments = comments;
 
             return View();
@@ -158,7 +155,7 @@ namespace SupportTicketApp.Controllers
             
             int ticketId = Convert.ToInt32(Request.Form["TicketId"]);
             var ticket = await _context.TicketInfoTabs
-                               .Include(t => t.UserTab) // UserTab'ı yükle
+                               .Include(t => t.UserTab) 
                                .FirstOrDefaultAsync(t => t.TicketId == ticketId);
             if (ticket == null)
             {
@@ -178,7 +175,6 @@ namespace SupportTicketApp.Controllers
             _context.TicketInfoCommentTabs.Add(ticketInfoComment);
             await _context.SaveChangesAsync();
 
-            // Yüklenen fotoğrafları kaydet
             if (model.CommentImages != null && model.CommentImages.Count > 0)
             {
                 foreach (var image in model.CommentImages)
@@ -281,6 +277,66 @@ namespace SupportTicketApp.Controllers
 
                 return File(stream.ToArray(), "application/pdf", $"Ticket_{ticketId}.pdf");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BulkUpdateTickets(int[] ticketIds, string action)
+        {
+            if (ticketIds == null || ticketIds.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Herhangi bir bilet seçilmedi.";
+                return RedirectToAction("AllTickets");
+            }
+
+            var ticketIdParams = ticketIds.Select((id, index) => new { Id = id, ParamName = $"@p{index}" }).ToList();
+
+            var parameterizedQuery = $"SELECT * FROM TicketInfoTabs WHERE TicketId IN ({string.Join(", ", ticketIdParams.Select(p => p.ParamName))})";
+
+            var sqlParameters = ticketIdParams
+                .Select(p => new Microsoft.Data.SqlClient.SqlParameter(p.ParamName, p.Id))
+                .ToArray();
+
+            var tickets = await _context.TicketInfoTabs
+                .FromSqlRaw(parameterizedQuery, sqlParameters)
+                .ToListAsync();
+
+            if (tickets == null || tickets.Count == 0)
+            {
+                TempData["ErrorMessage"] = "Seçilen biletler bulunamadı.";
+                return RedirectToAction("AllTickets");
+            }
+
+            switch (action?.ToLower())
+            {
+                case "complete":
+                    foreach (var ticket in tickets)
+                    {
+
+                        ticket.IsCompleted = true;
+                        ticket.ModifiedDate = DateTime.Now;
+                    }
+                    TempData["SuccessMessage"] = $"Seçili {tickets.Count} bilet başarıyla tamamlandı.";
+                    break;
+
+                case "delete":
+                    foreach (var ticket in tickets)
+                    {
+
+                        ticket.Status = false; // Pasif
+                        ticket.IsCompleted = true;
+                        ticket.DeletedDate = DateTime.Now;
+                    }
+                    TempData["SuccessMessage"] = $"Seçili {tickets.Count} bilet başarıyla silindi.";
+                    break;
+
+                default:
+                    TempData["ErrorMessage"] = "Geçersiz bir işlem türü seçildi.";
+                    return RedirectToAction("AssignedTickets");
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("AssignedTickets");
+
         }
     }
 }

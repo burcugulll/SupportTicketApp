@@ -1,33 +1,34 @@
 ﻿ @model SupportTicketApp.ViewModels.CreateTicketViewModel
 <style>
-    /* Disabled form elemanları için stil */
     .form-control:disabled {
         background-color: #f8f9fa;
         cursor: not-allowed;
     }
 
-    /* Label'lar için disabled stil */
     .disabled-label {
         color: #6c757d;
         cursor: not-allowed;
     }
 </style>
 @{
-    var errorMessage = ViewData["ErrorMessage"] as string;
+    var successMessage = TempData["SuccessMessage"] as string;
+    var errorMessage = TempData["ErrorMessage"] as string;
 }
 <h1>Bilet Düzenle</h1>
-@* @if (ViewBag.CanEdit == false)
+@if (!string.IsNullOrEmpty(successMessage))
 {
-    <div class="alert alert-warning">
-        <strong>Uyarı:</strong> Bu bilet bir personele atanmış, düzenlenemez.
+    <div class="alert alert-success">
+        <strong>Başarılı:</strong> @successMessage
     </div>
-} *@
+}
+
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-warning">
         <strong>Uyarı:</strong> @errorMessage
     </div>
 }
+
 <form asp-action="@(ViewBag.CanEdit == false ? "CreateComment" : "EditTicket")" method="post" enctype="multipart/form-data">
     <input type="hidden" id="TicketId" name="TicketId" value="@ViewBag.TicketId" />
     <div class="form-group">
@@ -107,3 +108,20 @@
     <button type="submit" class="btn btn-primary">Yorum Gönder</button>
 
 </form>
+<h3>Yorumlarım</h3>
+@if (ViewBag.Comments != null && ViewBag.Comments.Count > 0)
+{
+    <ul class="list-group">
+        @foreach (var comment in ViewBag.Comments)
+        {
+            <li class="list-group-item">
+                <strong>@comment.Title</strong> - @comment.CreatedDate.ToString("g")
+                <p>@comment.Description</p>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Henüz yorum yapılmamış.</p>
+}

@@ -26,7 +26,7 @@ namespace SupportTicketApp.Models
         public int UserId { get; set; }
         public UserTab UserTab { get; set; }
 
-        public int TicketId { get; set; } //fk ticket
+        public int TicketId { get; set; } 
         public TicketInfoTab TicketInfoTab { get; set; } // Bire çok: Her yorum bir bilete ait
 
         public ICollection<TicketCommentImage?> TicketCommentImages { get; set; }

@@ -31,11 +31,11 @@ namespace SupportTicketApp.Context
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // TicketInfoTab ile TicketImage arasındaki bire çok ilişkiyi tanımlıyoruz
+            // TicketInfoTab ile TicketImage arasındaki bire çok ilişki
             modelBuilder.Entity<TicketInfoTab>()
                 .HasMany(t => t.TicketImages) // TicketInfoTab'ın birden fazla resmi olabilir
-                .WithOne(ti => ti.TicketInfoTab) // Ters ilişkiyi kuruyoruz: Her TicketImage, bir TicketInfoTab'a ait olacak
-                .HasForeignKey(ti => ti.TicketId) // TicketImage tablosunda TicketId, TicketInfoTab'ın foreign key'i olacaktır.
+                .WithOne(ti => ti.TicketInfoTab) // Ters ilişkiyi  Her TicketImage, bir TicketInfoTab'a ait olacak
+                .HasForeignKey(ti => ti.TicketId) 
                 .OnDelete(DeleteBehavior.Cascade);
 
 
@@ -54,11 +54,11 @@ namespace SupportTicketApp.Context
                 .OnDelete(DeleteBehavior.NoAction);
 
 
-            // TicketInfoCommentTab ile TicketCommentImage arasındaki bire çok ilişkiyi tanımlıyoruz
+            // TicketInfoCommentTab ile TicketCommentImage arasındaki bire çok ilişki
             modelBuilder.Entity<TicketInfoCommentTab>()
                 .HasMany(t => t.TicketCommentImages) // TicketInfoCommentTab'ın birden fazla resmi olabilir
                 .WithOne(i => i.TicketInfoCommentTab) // TicketCommentImage'in bir TicketInfoCommentTab'ı olacak (ters ilişki)
-                .HasForeignKey(i => i.CommentId) // TicketCommentImage tablosunda CommentId, TicketInfoCommentTab'ın foreign key'i olacaktır
+                .HasForeignKey(i => i.CommentId) 
                 .OnDelete(DeleteBehavior.Cascade);
 
             // UserTab ile UserLogTab arasındaki bire çok ilişki

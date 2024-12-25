@@ -155,10 +155,12 @@ namespace SupportTicketApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-
-            HttpContext.SignOutAsync();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Session.Clear();  // Oturum bilgisini temizle.
+            Response.Cookies.Delete(".AspNetCore.Cookies");  // Authentication çerezi
+            Response.Cookies.Delete("ASP.NET_SessionId");  // Session çerezi
             return RedirectToAction("Login", "Account");
         }
 
@@ -175,8 +177,8 @@ namespace SupportTicketApp.Controllers
         [HttpGet]
         public IActionResult Test()
         {
-            var result = new { message = "Test" };  // JSON dönecek veriyi oluşturuyoruz
-            return new JsonResult(result);  // JsonResult ile veriyi JSON formatında döndürüyoruz
+            var result = new { message = "Test" };  
+            return new JsonResult(result);  
         }
 
 
@@ -200,7 +202,7 @@ namespace SupportTicketApp.Controllers
                 var existingAdmin = await _context.UserTabs.SingleOrDefaultAsync(u => u.UserName == "admin");
                 if (existingAdmin != null)
                 {
-                    return new JsonResult(new { code = 404, message = "Admin kullanıcı zaten mevcut."});  // JsonResult ile veriyi JSON formatında döndürüyoruz
+                    return new JsonResult(new { code = 404, message = "Admin kullanıcı zaten mevcut."});  
                     ViewBag.Message = "Admin kullanıcı zaten mevcut.";
 
                     return View();
@@ -233,14 +235,14 @@ namespace SupportTicketApp.Controllers
                     ViewBag.Message = "Yönetici kullanıcı kaydedilemedi. Veritabanında bir sorun olabilir.";
                 }
 
-                var jsonresult = new { code=200, message = "Admin Kullanıcısı Başarıyla Oluşturuldu." };  // JSON dönecek veriyi oluşturuyoruz
-                return new JsonResult(jsonresult);  // JsonResult ile veriyi JSON formatında döndürüyoruz
+                var jsonresult = new { code=200, message = "Admin Kullanıcısı Başarıyla Oluşturuldu." };  
+                return new JsonResult(jsonresult);  
 
 
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { code = 500, message = "Admin Kullanıcısı Oluşturulamadı",error = ex.ToString() });  // JsonResult ile veriyi JSON formatında döndürüyoruz
+                return new JsonResult(new { code = 500, message = "Admin Kullanıcısı Oluşturulamadı",error = ex.ToString() });  
             }
 
         }
