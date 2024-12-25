@@ -5,12 +5,14 @@
 }
 
 <h1>Destek Biletleri</h1>
+
 @if (ViewBag.Message != null)
 {
     <div class="alert alert-success">
         @ViewBag.Message
     </div>
 }
+
 <table class="table">
     <thead>
         <tr>
@@ -18,7 +20,7 @@
             <th>Açıklama</th>
             <th>Aciliyet</th>
             <th>Oluşturulma Tarihi</th>
-             <th>İşlemler</th>
+            <th>İşlemler</th>
         </tr>
     </thead>
     <tbody>
@@ -30,15 +32,12 @@
                 <td>@ticket.Urgency.ToString()</td>
                 <td>@ticket.CreatedDate</td>
                 <td>
-                     @if (ticket.Status == true)  
+                    @if (ticket.Status == true)
                     {
                         @if (ticket.TicketAssignments == null || !ticket.TicketAssignments.Any())
                         {
                             <a href="@Url.Action("EditTicket", "User", new { id = ticket.TicketId })" class="btn btn-warning">Düzenle</a>
-                            <form asp-action="DeleteTicket" method="post" class="d-inline">
-                                <input type="hidden" name="ticketId" value="@ticket.TicketId" />
-                                <button type="submit" class="btn btn-danger">Sil</button>
-                            </form>
+                            <button class="btn btn-danger" onclick="confirmDelete('@ticket.TicketId', '@ticket.Title')">Sil</button>
                         }
                         else
                         {
@@ -47,13 +46,49 @@
                     }
                     else
                     {
-                        <span class="text-muted">Silinmiş</span> 
+                        <span class="text-muted">Silinmiş</span>
                     }
                 </td>
             </tr>
         }
-        
     </tbody>
 </table>
 
 <a href="@Url.Action("CreateTicket", "User")" class="btn btn-primary">Yeni Bilet Oluştur</a>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Onay Gerekli</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                <!-- Dinamik modal mesajı buraya yüklenecek -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form id="deleteForm" asp-action="DeleteTicket" method="post" class="d-inline">
+                    <input type="hidden" name="ticketId" id="modalTicketId" />
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(ticketId, ticketTitle) {
+        // Modal başlık ve mesajını dinamik olarak ayarla
+        const modalMessage = `Bu bilet silinecek: "${ticketTitle}". Onaylıyor musunuz?`;
+        document.getElementById("modalMessage").innerText = modalMessage;
+
+        // Silinecek biletin ID'sini gizli input'a yerleştir
+        document.getElementById("modalTicketId").value = ticketId;
+
+        // Modal'ı göster
+        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'), {});
+        modal.show();
+    }
+</script>

@@ -12,7 +12,7 @@
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 
-<form asp-action="BulkUpdateTickets" method="post">
+<form method="post" id="bulkActionForm">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -64,10 +64,8 @@
                         }
                     </td>
                     <td>
-                        <a asp-controller="Employee" asp-action="AddComment" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>                    
+                        <a asp-controller="Employee" asp-action="AddComment" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
                         <a asp-controller="Employee" asp-action="ExportToPdf" asp-route-ticketId="@ticket.TicketId" class="btn btn-secondary">PDF İndir</a>
-
-
                     </td>
                 </tr>
             }
@@ -75,14 +73,85 @@
     </table>
 
     <div class="mt-3">
-        <button type="submit" name="action" value="complete" class="btn btn-success">Tamamlandı</button>
-        <button type="submit" name="action" value="delete" class="btn btn-danger">Sil</button>
+        <button type="button" class="btn btn-success" onclick="confirmBulkAction('Tamamlandı', 'Seçilen biletleri tamamlandı olarak işaretlemek istiyor musunuz?', 'complete')">Tamamlandı</button>
+        <button type="button" class="btn btn-danger" onclick="confirmBulkAction('Sil', 'Seçilen biletleri silmek istiyor musunuz?', 'delete')">Sil</button>
     </div>
 </form>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Onay Gerekli</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                <!-- Modal mesajı dinamik olarak buraya yüklenecek -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="modalConfirmButton">Evet, devam et</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     document.getElementById("selectAll").addEventListener("click", function () {
         const checkboxes = document.querySelectorAll("input[name='ticketIds']");
         checkboxes.forEach(cb => cb.checked = this.checked);
     });
+
+    function confirmBulkAction(actionTitle, actionMessage, actionValue) {
+        const selectedTickets = Array.from(document.querySelectorAll("input[name='ticketIds']:checked"))
+            .map(cb => cb.value);
+
+        if (selectedTickets.length === 0) {
+            alert("Lütfen en az bir bilet seçin.");
+            return;
+        }
+
+        // Modal ekranını tetiklemek için showModal çağrılıyor
+        showModal(actionTitle, actionMessage, function () {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/Employee/BulkUpdateTickets'; // Doğru controller ve action yönlendirmesi yapılıyor.
+
+            // Seçilen ticket ID'lerini form içine ekliyoruz
+            selectedTickets.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ticketIds';
+                input.value = id;
+                form.appendChild(input);
+            });
+
+            // İşlem türünü belirten bir hidden input ekliyoruz
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = actionValue;
+            form.appendChild(actionInput);
+
+            // Formu DOM'a ekleyip submit ediyoruz
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    function showModal(title, message, confirmCallback) {
+        document.getElementById("confirmationModalLabel").innerText = title;
+        document.getElementById("modalMessage").innerText = message;
+
+        const confirmButton = document.getElementById("modalConfirmButton");
+        confirmButton.onclick = function () {
+            confirmCallback(); // Onay işlemi tetikleniyor
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+            modal.hide();
+        };
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'), {});
+        modal.show();
+    }
 </script>

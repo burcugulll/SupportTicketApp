@@ -23,8 +23,6 @@
                 <td>@(ticket.Status ? "Aktif" : "Pasif")</td>
                 <td>@ticket.Urgency</td>
                 <td>@(ticket.UserTab?.Name ?? "Atanmamış")</td>
-
-
                 <td>@ticket.CreatedDate.ToShortDateString()</td>
                 <td>
                     @if (ticket.TicketImages != null && ticket.TicketImages.Any(img => img.Status))
@@ -36,7 +34,6 @@
                         <span>Resim yok</span>
                     }
                 </td>
-
                 <td>
                     @if (ticket.IsCompleted)
                     {
@@ -49,13 +46,50 @@
                 </td>
                 <td>
                     <a asp-controller="Admin" asp-action="TicketDetails" asp-route-ticketId="@ticket.TicketId" class="btn btn-info">Detay</a>
-                    <a asp-controller="Admin" asp-action="DeleteTicket" asp-route-ticketId="@ticket.TicketId" class="btn btn-danger">Bilet Sil</a>
-                    <form asp-action="CompleteTicket" method="post" style="display:inline;">
-                        <input type="hidden" name="ticketId" value="@ticket.TicketId" />
-                        <button type="submit" class="btn btn-success">Tamamlandı</button>
-                    </form> 
+                    <button type="button" class="btn btn-danger" onclick="deleteTicket('@ticket.TicketId')">Bilet Sil</button>
+                    <button type="button" class="btn btn-success" onclick="completeTicket('@ticket.TicketId')">Tamamlandı</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="/wwwroot/js/sweetalert-helper.js"></script>
+    <script>
+        function deleteTicket(ticketId) {
+            confirmAction(
+                "Bileti Sil",
+                "Bu işlemi onaylıyor musunuz?",
+                function () {
+                    window.location.href = `/Admin/DeleteTicket?ticketId=${ticketId}`;
+                },
+                function () {
+                    console.log("Silme işlemi iptal edildi.");
+                }
+            );
+        }
+
+        function completeTicket(ticketId) {
+            confirmAction(
+                "Bileti Tamamla",
+                "Bu işlemi onaylıyor musunuz?",
+                function () {
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '/Admin/CompleteTicket';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ticketId';
+                    input.value = ticketId;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                function () {
+                    console.log("Tamamlama işlemi iptal edildi.");
+                }
+            );
+        }
+    </script>
+}
