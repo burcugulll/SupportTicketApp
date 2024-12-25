@@ -87,7 +87,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <div class="modal-body" id="modalMessage">
-                <!-- Modal mesajı dinamik olarak buraya yüklenecek -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
@@ -112,13 +111,11 @@
             return;
         }
 
-        // Modal ekranını tetiklemek için showModal çağrılıyor
         showModal(actionTitle, actionMessage, function () {
             const form = document.createElement('form');
             form.method = 'post';
-            form.action = '/Employee/BulkUpdateTickets'; // Doğru controller ve action yönlendirmesi yapılıyor.
+            form.action = '/Employee/BulkUpdateTickets'; 
 
-            // Seçilen ticket ID'lerini form içine ekliyoruz
             selectedTickets.forEach(id => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -127,14 +124,12 @@
                 form.appendChild(input);
             });
 
-            // İşlem türünü belirten bir hidden input ekliyoruz
             const actionInput = document.createElement('input');
             actionInput.type = 'hidden';
             actionInput.name = 'action';
             actionInput.value = actionValue;
             form.appendChild(actionInput);
 
-            // Formu DOM'a ekleyip submit ediyoruz
             document.body.appendChild(form);
             form.submit();
         });
@@ -146,7 +141,7 @@
 
         const confirmButton = document.getElementById("modalConfirmButton");
         confirmButton.onclick = function () {
-            confirmCallback(); // Onay işlemi tetikleniyor
+            confirmCallback(); 
             const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
             modal.hide();
         };

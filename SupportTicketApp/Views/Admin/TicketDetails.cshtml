@@ -67,7 +67,7 @@
         </td>
     </tr>
 
- 
+
 
     <!-- Yorumlar Bölümü -->
     <div class="comments-section">
@@ -89,7 +89,6 @@
         }
 
     </div>
-    <!-- Personel Ata -->
     <div class="assign-personnel">
         <h3>Personel Ata</h3>
         <form asp-action="AssignUsersToTicket" method="post">
@@ -100,8 +99,10 @@
                 {
                     foreach (var user in ViewBag.Users)
                     {
-
-                        <option value="@user.UserId">@user.Name</option>
+                        if (!ViewBag.AssignedUserIds.Contains(user.UserId))
+                        {
+                            <option value="@user.UserId">@user.Name</option>
+                        }
                     }
                 }
                 else
@@ -113,6 +114,23 @@
             <button type="submit" class="btn btn-primary mt-2">Ata</button>
         </form>
     </div>
+
+
+    <h3>Atanmış Personeller</h3>
+    @if (ViewBag.AssignedUsers != null && ViewBag.AssignedUsers.Count > 0)
+    {
+        <ul>
+            @foreach (var user in ViewBag.AssignedUsers)
+            {
+                <li>@user.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Bu bilete hiçbir personel atanmadı.</p>
+    }
+
     <!-- İşlemler ve Butonlar -->
     <div class="btn-group mt-4 d-flex justify-content-center" role="group">
 
@@ -122,4 +140,4 @@
 
         <a asp-action="ExportToPdf" asp-route-ticketId="@Model.TicketId" class="btn btn-secondary">PDF İndir</a>
     </div>
-</div>
+</div> 

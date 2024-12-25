@@ -142,6 +142,7 @@ namespace SupportTicketApp.Controllers
                 .Include(t => t.UserTab)
                 .Include(t => t.TicketImages)
                 .Include(t => t.TicketAssignments)
+                .ThenInclude(a => a.UserTab) 
                 .Include(t => t.TicketInfoCommentTabs)
                 .FirstOrDefault(t => t.TicketId == ticketId);
 
@@ -149,13 +150,22 @@ namespace SupportTicketApp.Controllers
             {
                 return NotFound();
             }
+
             ViewBag.Users = _context.UserTabs
                 .Where(u => u.UserType == UserType.Calisan)
-       .Select(u => new { u.UserId, u.Name })
-       .ToList();
+                .Select(u => new { u.UserId, u.Name })
+                .ToList();
+
+            var assignedUsers = ticket.TicketAssignments
+                .Select(a => a.UserTab)
+                .ToList();
+            ViewBag.AssignedUserIds = assignedUsers.Select(u => u.UserId).ToList();
+
+            ViewBag.AssignedUsers = assignedUsers;
 
             return View(ticket);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> EditTicket(int ticketId)
