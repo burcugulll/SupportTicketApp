@@ -505,6 +505,26 @@ namespace SupportTicketApp.Controllers
             return RedirectToAction("TicketDetails", new { ticketId });
         }
 
+        [HttpPost]
+        public IActionResult ActivateUser(int id)
+        {
+            // Kullanıcıyı veritabanında bul ve aktif et
+            var user = _context.UserTabs.FirstOrDefault(u => u.UserId == id);
+            if (user != null)
+            {
+                user.Status = true;  // Kullanıcıyı aktif hale getir
+                _context.SaveChanges();  // Değişiklikleri kaydet
+                TempData["SuccessMessage"] = "Kullanıcı başarıyla aktifleştirildi!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Kullanıcı bulunamadı!";
+            }
+
+            return RedirectToAction("UserManagement"); // Kullanıcı yönetimi sayfasına yönlendir
+        }
+
+
     }
 }
     
